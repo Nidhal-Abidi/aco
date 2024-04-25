@@ -1,5 +1,12 @@
 <script lang="ts">
   import { AS, type City } from "./lib/acoAlgorithms"
+  function initializePheromone(cities: City[], initialVal: number) {
+    cities.forEach((city) => {
+      for (let neighbor in city.pheromoneTo) {
+        city.pheromoneTo[neighbor] = initialVal
+      }
+    })
+  }
   const cities: City[] = [
     {
       x: 100,
@@ -325,7 +332,7 @@
         c_3: 443.8,
         c_4: 480.2,
         c_5: 291.5,
-        c_8: 305.3,
+        c_6: 305.3,
         c_7: 363.6,
         c_9: 162.8,
       },
@@ -336,7 +343,7 @@
         c_3: 0,
         c_4: 0,
         c_5: 0,
-        c_8: 0,
+        c_6: 0,
         c_7: 0,
         c_9: 0,
       },
@@ -392,7 +399,10 @@
       },
     },
   ]
-  AS(cities)
+  initializePheromone(cities, 1)
+  const [ACOIterations, antsChosenPaths] = AS(cities)
+  console.log("ACOIterations =", ACOIterations)
+  console.log("antsChosenPaths =", antsChosenPaths)
 </script>
 
 <main>

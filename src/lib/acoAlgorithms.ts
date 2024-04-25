@@ -196,24 +196,130 @@ export function sumOfDesiresOfMovingToAllAllowedCities(
   return sum
 }
 
-function getAllEdges(cities: City[]) {
-  let edges: Record<string, number> = {}
-  cities.forEach((city) => {
+function getNewLineWidth(
+  oldLineWidth: number,
+  oldPheromoneAmount: number,
+  newPheromoneAmount: number
+) {
+  const percentageDiff = getPercentageDifference(
+    oldPheromoneAmount,
+    newPheromoneAmount
+  )
+  const newLineWidth = roundUpTo3Decimal(oldLineWidth * (1 + percentageDiff))
+  /* console.log(
+    `B-Pher=${oldPheromoneAmount}, A-Pher=${newPheromoneAmount}, %Diff=${percentageDiff}, B-Line=${oldLineWidth}, A-Line=${newLineWidth}`
+  ) */
+  if (newLineWidth < 0.1) {
+    return 0.1
+  } else if (newLineWidth > 5) {
+    return 5
+  }
+  return newLineWidth
+}
+
+function getPercentageDifference(originalVal: number, newValue: number) {
+  if (originalVal == 0 && newValue == 0) return 0
+  return originalVal === 0 ? 1 : (newValue - originalVal) / originalVal
+}
+
+function getLengthOfAllEdges(cities: City[]) {
+  const allEdgesLengths: Record<string, number> = {}
+  for (let city of cities) {
     for (let neighborName in city.distanceTo) {
-      edges[city.name + neighborName] = 0
+      allEdgesLengths[city.name + neighborName] = city.distanceTo[neighborName]
+    }
+  }
+  return allEdgesLengths
+}
+
+function getAntPathLength(
+  antPathArr: string[],
+  allEdges: Record<string, number>
+) {
+  let pathLength = 0
+  for (let i = 0; i < antPathArr.length - 1; i++) {
+    let currentEdge = antPathArr[i] + antPathArr[i + 1]
+    if (currentEdge in allEdges) {
+      pathLength += allEdges[currentEdge]
+    } else {
+      console.error(`Edge-${currentEdge} doesn't exist in the object allEdges!`)
+    }
+  }
+  return pathLength
+}
+
+function getAntPheromoneContribution(
+  antPath: string[],
+  edge: string,
+  allEdges: Record<string, number>
+) {
+  for (let i = 0; i < antPath.length - 1; i++) {
+    if (antPath[i] + antPath[i + 1] == edge) {
+      return 10 / getAntPathLength(antPath, allEdges)
+    }
+  }
+  return 0
+}
+
+function getNewPheromoneAmount(
+  oldPheromoneAmount: number,
+  currentIterationAntPaths: string[][],
+  edge: string,
+  rou: number,
+  allEdges: Record<string, number>
+) {
+  let sumOfAntsContributions = 0
+  for (let antPath of currentIterationAntPaths) {
+    sumOfAntsContributions += getAntPheromoneContribution(
+      antPath,
+      edge,
+      allEdges
+    )
+  }
+  return (1 - rou) * oldPheromoneAmount + sumOfAntsContributions
+}
+
+// Returns cities after updating the pheromone amnt & line width.
+function updatePheromoneAmount(
+  cities: City[],
+  currentIterationAntPaths: string[][],
+  rou: number
+) {
+  const allEdges = getLengthOfAllEdges(cities)
+  cities.forEach((city) => {
+    for (let neighborName in city.pheromoneTo) {
+      const linkingEdge = city.name + neighborName
+      const oldPheromoneAmount = city.pheromoneTo[neighborName]
+      const oldLineWidth = city.lineWidthTo[neighborName]
+      const newPheromoneAmount = getNewPheromoneAmount(
+        oldPheromoneAmount,
+        currentIterationAntPaths,
+        linkingEdge,
+        rou,
+        allEdges
+      )
+      const newLineWidth = getNewLineWidth(
+        oldLineWidth,
+        oldPheromoneAmount,
+        newPheromoneAmount
+      )
+      city.pheromoneTo[neighborName] = newPheromoneAmount
+      city.lineWidthTo[neighborName] = newLineWidth
     }
   })
-  return edges
+  // Mark all cities as unvisited for the next iteration
+  cities.forEach((city) => (city.isVisited = false))
+  return cities
 }
 
 // Returns [ACOIterations, antsChosenPaths]
 export function AS(
   cities: City[],
-  colonySize = 10,
+  colonySize = 30,
   alpha = 1,
-  beta = 1,
-  rou = 0.2,
-  iterations = 50,
+  beta = 3,
+  rou = 0.1,
+  iterations = 200,
   speed = 300
 ): [City[][], string[][][]] {
   console.log("AS")
@@ -224,8 +330,6 @@ export function AS(
   let antsChosenPaths: string[][][] = []
 
   for (let iter = 0; iter < iterations; iter++) {
-    console.log("iter=", iter)
-    //let allEdges: Record<string, number> = getAllEdges(cities)
     let currentIterationAntPaths: string[][] = []
 
     for (let i = 0; i < colonySize; i++) {
@@ -238,13 +342,15 @@ export function AS(
         beta
       )
       currentIterationAntPaths.push(orderOfVisitedCities)
-      //console.log(`Cities visited by ant_${i}: `, orderOfVisitedCities)
     }
     antsChosenPaths.push(currentIterationAntPaths)
+    // Update the values of pheromone & lineWidths. Also store the previous values for the animation.
+    const updatedCities = updatePheromoneAmount(
+      citiesDeepCopy(cities),
+      currentIterationAntPaths,
+      rou
+    )
+    ACOIterations.push(updatedCities)
   }
   return [ACOIterations, antsChosenPaths]
-}
-
-function logger(cities: City[]) {
-  console.log(JSON.stringify(cities))
 }
