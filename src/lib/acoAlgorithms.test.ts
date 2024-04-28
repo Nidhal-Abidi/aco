@@ -4,6 +4,7 @@ import {
   getRandomIntInclusive,
   getProbabilityOfMovingToCity_j,
   sumOfDesiresOfMovingToAllAllowedCities,
+  getAllUnvisitedNeighborsOfCity_i,
 } from "./acoAlgorithms"
 import { describe, expect, it } from "vitest"
 
@@ -464,5 +465,284 @@ describe("#getProbabilityOfMovingToCity_j", () => {
   it("Returns 0 if it All the cities were visited", () => {
     let prob = getProbabilityOfMovingToCity_j(cities[0], [], "", 1, 1)
     expect(prob).toBe(0)
+  })
+})
+
+describe("#getAllUnvisitedNeighborsOfCity_i", () => {
+  function isSameArrayContent(arrA: string[], arrB: string[]) {
+    if (arrA.length !== arrB.length) return false
+    for (let cityA of arrA) {
+      if (arrB.includes(cityA) === false) return false
+    }
+    for (let cityB of arrB) {
+      if (arrA.includes(cityB) === false) return false
+    }
+    return true
+  }
+
+  it("Returns only the cities where isVisited == false. Which are: c_0, c_2, c_4", () => {
+    const cities: City[] = [
+      {
+        x: 100,
+        y: 100,
+        name: "c_0",
+        isVisited: false,
+        distanceTo: {
+          c_1: 170,
+          c_2: 471.7,
+          c_3: 650,
+          c_4: 500.9,
+        },
+        pheromoneTo: {
+          c_1: 0,
+          c_2: 0,
+          c_3: 0,
+          c_4: 0,
+        },
+        lineWidthTo: {
+          c_1: 0.3,
+          c_2: 0.3,
+          c_3: 0.3,
+          c_4: 0.3,
+        },
+      },
+      {
+        x: 180,
+        y: 250,
+        name: "c_1",
+        isVisited: true,
+        distanceTo: {
+          c_0: 170,
+          c_2: 302.3,
+          c_3: 501.2,
+          c_4: 436.8,
+        },
+        pheromoneTo: {
+          c_0: 0,
+          c_2: 0,
+          c_3: 0,
+          c_4: 0,
+        },
+        lineWidthTo: {
+          c_0: 0.3,
+          c_2: 0.3,
+          c_3: 0.3,
+          c_4: 0.3,
+        },
+      },
+      {
+        x: 350,
+        y: 500,
+        name: "c_2",
+        isVisited: false,
+        distanceTo: {
+          c_0: 471.7,
+          c_1: 302.3,
+          c_3: 270.2,
+          c_4: 446.5,
+        },
+        pheromoneTo: {
+          c_0: 0,
+          c_1: 0,
+          c_3: 0,
+          c_4: 0,
+        },
+        lineWidthTo: {
+          c_0: 0.3,
+          c_1: 0.3,
+          c_3: 0.3,
+          c_4: 0.3,
+        },
+      },
+      {
+        x: 620,
+        y: 490,
+        name: "c_3",
+        isVisited: true,
+        distanceTo: {
+          c_0: 650,
+          c_1: 501.2,
+          c_2: 270.2,
+          c_4: 360.6,
+        },
+        pheromoneTo: {
+          c_0: 0,
+          c_1: 0,
+          c_2: 0,
+          c_4: 0,
+        },
+        lineWidthTo: {
+          c_0: 0.3,
+          c_1: 0.3,
+          c_2: 0.3,
+          c_4: 0.3,
+        },
+      },
+      {
+        x: 600,
+        y: 130,
+        name: "c_4",
+        isVisited: false,
+        distanceTo: {
+          c_0: 500.9,
+          c_1: 436.8,
+          c_2: 446.5,
+          c_3: 360.6,
+        },
+        pheromoneTo: {
+          c_0: 0,
+          c_1: 0,
+          c_2: 0,
+          c_3: 0,
+        },
+        lineWidthTo: {
+          c_0: 0.3,
+          c_1: 0.3,
+          c_2: 0.3,
+          c_3: 0.3,
+        },
+      },
+    ]
+    const unvisitedNeighborsList = getAllUnvisitedNeighborsOfCity_i(
+      cities,
+      cities[0]
+    )
+    const isSameArrContent = isSameArrayContent(unvisitedNeighborsList, [
+      "c_0",
+      "c_2",
+      "c_4",
+    ])
+    expect(isSameArrContent).toBeTruthy
+  })
+
+  it("Returns empty array if all the neighbors were visited", () => {
+    const cities: City[] = [
+      {
+        x: 100,
+        y: 100,
+        name: "c_0",
+        isVisited: true,
+        distanceTo: {
+          c_1: 170,
+          c_2: 471.7,
+          c_3: 650,
+          c_4: 500.9,
+        },
+        pheromoneTo: {
+          c_1: 0,
+          c_2: 0,
+          c_3: 0,
+          c_4: 0,
+        },
+        lineWidthTo: {
+          c_1: 0.3,
+          c_2: 0.3,
+          c_3: 0.3,
+          c_4: 0.3,
+        },
+      },
+      {
+        x: 180,
+        y: 250,
+        name: "c_1",
+        isVisited: true,
+        distanceTo: {
+          c_0: 170,
+          c_2: 302.3,
+          c_3: 501.2,
+          c_4: 436.8,
+        },
+        pheromoneTo: {
+          c_0: 0,
+          c_2: 0,
+          c_3: 0,
+          c_4: 0,
+        },
+        lineWidthTo: {
+          c_0: 0.3,
+          c_2: 0.3,
+          c_3: 0.3,
+          c_4: 0.3,
+        },
+      },
+      {
+        x: 350,
+        y: 500,
+        name: "c_2",
+        isVisited: true,
+        distanceTo: {
+          c_0: 471.7,
+          c_1: 302.3,
+          c_3: 270.2,
+          c_4: 446.5,
+        },
+        pheromoneTo: {
+          c_0: 0,
+          c_1: 0,
+          c_3: 0,
+          c_4: 0,
+        },
+        lineWidthTo: {
+          c_0: 0.3,
+          c_1: 0.3,
+          c_3: 0.3,
+          c_4: 0.3,
+        },
+      },
+      {
+        x: 620,
+        y: 490,
+        name: "c_3",
+        isVisited: true,
+        distanceTo: {
+          c_0: 650,
+          c_1: 501.2,
+          c_2: 270.2,
+          c_4: 360.6,
+        },
+        pheromoneTo: {
+          c_0: 0,
+          c_1: 0,
+          c_2: 0,
+          c_4: 0,
+        },
+        lineWidthTo: {
+          c_0: 0.3,
+          c_1: 0.3,
+          c_2: 0.3,
+          c_4: 0.3,
+        },
+      },
+      {
+        x: 600,
+        y: 130,
+        name: "c_4",
+        isVisited: true,
+        distanceTo: {
+          c_0: 500.9,
+          c_1: 436.8,
+          c_2: 446.5,
+          c_3: 360.6,
+        },
+        pheromoneTo: {
+          c_0: 0,
+          c_1: 0,
+          c_2: 0,
+          c_3: 0,
+        },
+        lineWidthTo: {
+          c_0: 0.3,
+          c_1: 0.3,
+          c_2: 0.3,
+          c_3: 0.3,
+        },
+      },
+    ]
+    const unvisitedNeighborsList = getAllUnvisitedNeighborsOfCity_i(
+      cities,
+      cities[0]
+    )
+    const isSameArrContent = isSameArrayContent(unvisitedNeighborsList, [])
+    expect(isSameArrContent).toBeTruthy
   })
 })

@@ -8,73 +8,71 @@ export type City = {
   lineWidthTo: Record<string, number>
 }
 
-export function roundUpTo3Decimal(num: number) {
-  // Convert the number to a string with one decimal place
-  const roundedUpString = num.toFixed(3)
+// Returns [ACOIterations, antsChosenPaths]
+export function AS(
+  cities: City[],
+  colonySize = 30,
+  alpha = 1,
+  beta = 3,
+  rou = 0.1,
+  iterations = 100,
+  speed = 300
+): [City[][], string[][][]] {
+  console.log("AS")
+  // Array will be used later for the animation of: Graph & Matrix
+  let ACOIterations: City[][] = []
 
-  // Parse the string back to a number, effectively truncating the decimal part
-  // This will round up if the decimal part is >= 0.5
-  const roundedUpNumber = parseFloat(roundedUpString)
+  // Array will be used later for the animation of: List of cities visited by each ant in order.
+  let antsChosenPaths: string[][][] = []
 
-  return roundedUpNumber
-}
+  let updatedCities = citiesDeepCopy(cities)
 
-export function getRandomIntInclusive(min: number, max: number) {
-  // The maximum is inclusive and the minimum is inclusive
-  const minCeiled = Math.ceil(min)
-  const maxFloored = Math.floor(max)
-  return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled)
-}
+  for (let iter = 0; iter < iterations; iter++) {
+    let currentIterationAntPaths: string[][] = []
 
-function selectRandomCity(cities: City[]) {
-  return cities[getRandomIntInclusive(0, cities.length - 1)]
-}
+    for (let i = 0; i < colonySize; i++) {
+      // Deep Copy of cities since I'm modifying the array directly. This modification will affect the other ants during the same iteration.
 
-function markAllCitiesAsUnvisited(cities: City[]) {
-  cities.forEach((city) => (city.isVisited = false))
-}
-
-function markCityAsVisited(cities: City[], cityName: string) {
-  // Modify the array in place.
-  cities.forEach((city) => {
-    if (city.name === cityName) {
-      city.isVisited = true
+      let orderOfVisitedCities = getVisitedCitiesInOrder(
+        citiesDeepCopy(updatedCities),
+        alpha,
+        beta
+      )
+      currentIterationAntPaths.push(orderOfVisitedCities)
     }
-  })
+    antsChosenPaths.push(currentIterationAntPaths)
+    // Update the values of pheromone & lineWidths. Also store the previous values for the animation.
+    updatedCities = updatePheromoneAmount(
+      citiesDeepCopy(cities),
+      currentIterationAntPaths,
+      rou
+    )
+    ACOIterations.push(updatedCities)
+  }
+  return [ACOIterations, antsChosenPaths]
 }
 
-function citiesDeepCopy(cities: City[]): City[] {
-  let res: City[] = []
-  cities.forEach((city) => {
-    let copiedCity: City = {
-      x: city.x,
-      y: city.y,
-      name: city.name,
-      isVisited: city.isVisited,
-      distanceTo: JSON.parse(JSON.stringify(city.distanceTo)),
-      pheromoneTo: JSON.parse(JSON.stringify(city.pheromoneTo)),
-      lineWidthTo: JSON.parse(JSON.stringify(city.lineWidthTo)),
-    }
-    res.push(copiedCity)
-  })
-  return res
-}
-
-// TEST THIS LATER
 function getVisitedCitiesInOrder(cities: City[], alpha: number, beta: number) {
   // 'visitedCities' will contain the reslt of this fct. Final rslt = ['c_1', 'c_3', 'c_7' ...]
   let visitedCities: string[] = []
 
   // Select a random city to start with & mark it as visited
-  let currentCity = selectRandomCity(cities)
+  let currentCity: City = selectRandomCity(cities)
 
   markCityAsVisited(cities, currentCity.name)
   visitedCities.push(currentCity.name)
 
   while (visitedCities.length < cities.length) {
     let nextCity = getNextCityToVisit(cities, currentCity, alpha, beta)
+
+    if (nextCity === null) break
     // This shouldn't happen since we're tracking the nbr of visited cities here. But I added it so that TS won't complain.
-    if (nextCity == undefined) break
+    if (nextCity === undefined) {
+      console.error(
+        "Error: Something wrong happened when getting the nextCity!"
+      )
+      break
+    }
     markCityAsVisited(cities, nextCity.name)
     visitedCities.push(nextCity.name)
     currentCity = nextCity
@@ -82,28 +80,50 @@ function getVisitedCitiesInOrder(cities: City[], alpha: number, beta: number) {
   return visitedCities
 }
 
+function selectRandomCity(cities: City[]) {
+  return cities[getRandomIntInclusive(0, cities.length - 1)]
+}
+function markCityAsVisited(cities: City[], cityName: string) {
+  // Modify the array in place
+  for (let city of cities) {
+    if (city.name === cityName) {
+      city.isVisited = true
+      break
+    }
+  }
+}
+
+/**
+ * Function returns : A City, if it's Unvisited & was selected by our process.
+ *                    null: If all the cities were visited
+ *                    undefined: in every other case (Should be error cases)
+ * */
 function getNextCityToVisit(
   cities: City[],
   currentCity: City,
   alpha: number,
   beta: number
-): City | undefined {
-  const neighborsList = getAllUnvisitedNeighborsOfCity_i(cities, currentCity)
-  if (neighborsList.length == 0) return undefined
-  if (neighborsList.length == 1) return getCityByName(cities, neighborsList[0])
+) {
+  const unvisitedNeighborsList = getAllUnvisitedNeighborsOfCity_i(
+    cities,
+    currentCity
+  )
+  if (unvisitedNeighborsList.length == 0) return null
+  if (unvisitedNeighborsList.length == 1)
+    return getCityByName(cities, unvisitedNeighborsList[0])
 
   let probabilityOfMovingtoNeighbors: number[] = []
-  neighborsList.forEach((neighbor) => {
+  for (const neighbor of unvisitedNeighborsList) {
     let probability = getProbabilityOfMovingToCity_j(
       currentCity,
-      neighborsList,
+      unvisitedNeighborsList,
       neighbor,
       alpha,
       beta
     )
-    // console.log(`unvisitedNeighbors [of ${currentCity.name}] = `, neighborsList)
+    // console.log(`unvisitedNeighbors [of ${currentCity.name}] = `, unvisitedNeighborsList)
     probabilityOfMovingtoNeighbors.push(probability)
-  })
+  }
   let cumulativeProbability = 0
   // Will determine the next city to go to. We rely on chance BUT the city with a high prability would be more likely to be chosen.
   let randomNumber = Math.random()
@@ -116,7 +136,7 @@ function getNextCityToVisit(
     }
     cumulativeProbability += probabilityOfMovingtoNeighbors[i]
     if (randomNumber < cumulativeProbability) {
-      return getCityByName(cities, neighborsList[i])
+      return getCityByName(cities, unvisitedNeighborsList[i])
     }
   }
   console.error(
@@ -125,15 +145,7 @@ function getNextCityToVisit(
   )
 }
 
-function getCityByName(cities: City[], cityName: string) {
-  for (let i = 0; i < cities.length; i++) {
-    if (cities[i].name == cityName) {
-      return cities[i]
-    }
-  }
-}
-
-function getAllUnvisitedNeighborsOfCity_i(cities: City[], city: City) {
+export function getAllUnvisitedNeighborsOfCity_i(cities: City[], city: City) {
   let allNeighbors = getAllNeigborsOfCity_i(city)
   return allNeighbors.filter((neighbor) => {
     let potentialUnvisitedNeighbor = getCityByName(cities, neighbor)
@@ -151,6 +163,10 @@ function getAllNeigborsOfCity_i(city: City) {
     neighbors.push(neighbor)
   }
   return neighbors
+}
+
+function getCityByName(cities: City[], cityName: string) {
+  return cities.find((city) => city.name === cityName)
 }
 
 export function getProbabilityOfMovingToCity_j(
@@ -194,6 +210,41 @@ export function sumOfDesiresOfMovingToAllAllowedCities(
       (1 / currentCity.distanceTo[neighbor] ** -beta)
   }
   return sum
+}
+
+export function roundUpTo3Decimal(num: number) {
+  // Convert the number to a string with one decimal place
+  const roundedUpString = num.toFixed(3)
+
+  // Parse the string back to a number, effectively truncating the decimal part
+  // This will round up if the decimal part is >= 0.5
+  const roundedUpNumber = parseFloat(roundedUpString)
+
+  return roundedUpNumber
+}
+
+export function getRandomIntInclusive(min: number, max: number) {
+  // The maximum is inclusive and the minimum is inclusive
+  const minCeiled = Math.ceil(min)
+  const maxFloored = Math.floor(max)
+  return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled)
+}
+
+function citiesDeepCopy(cities: City[]): City[] {
+  let res: City[] = []
+  cities.forEach((city) => {
+    let copiedCity: City = {
+      x: city.x,
+      y: city.y,
+      name: city.name,
+      isVisited: city.isVisited,
+      distanceTo: JSON.parse(JSON.stringify(city.distanceTo)),
+      pheromoneTo: JSON.parse(JSON.stringify(city.pheromoneTo)),
+      lineWidthTo: JSON.parse(JSON.stringify(city.lineWidthTo)),
+    }
+    res.push(copiedCity)
+  })
+  return res
 }
 
 function getNewLineWidth(
@@ -248,55 +299,64 @@ function getAntPathLength(
   return pathLength
 }
 
-function getAntPheromoneContribution(
-  antPath: string[],
-  edge: string,
-  allEdges: Record<string, number>
+function getAntsContributionToEdges(
+  cities: City[],
+  currentIterationAntPaths: string[][]
 ) {
-  for (let i = 0; i < antPath.length - 1; i++) {
-    if (antPath[i] + antPath[i + 1] == edge) {
-      return 10 / getAntPathLength(antPath, allEdges)
+  const allEdgesLengths = getLengthOfAllEdges(cities)
+  const antsContributionToEdges: Record<string, number> = {}
+  for (const antPath of currentIterationAntPaths) {
+    const currentAntContrib = getCurrentAntContribution(
+      antPath,
+      allEdgesLengths
+    )
+
+    for (let i = 0; i < antPath.length - 1; i++) {
+      const currentEdge = antPath[i] + antPath[i + 1]
+      const reverseEdge = antPath[i + 1] + antPath[i]
+      if (currentEdge in antsContributionToEdges) {
+        antsContributionToEdges[currentEdge] += currentAntContrib
+        antsContributionToEdges[reverseEdge] += currentAntContrib
+      } else {
+        antsContributionToEdges[currentEdge] = currentAntContrib
+        antsContributionToEdges[reverseEdge] = currentAntContrib
+      }
     }
   }
-  return 0
+  return antsContributionToEdges
 }
 
-function getNewPheromoneAmount(
-  oldPheromoneAmount: number,
-  currentIterationAntPaths: string[][],
-  edge: string,
-  rou: number,
-  allEdges: Record<string, number>
-) {
-  let sumOfAntsContributions = 0
-  for (let antPath of currentIterationAntPaths) {
-    sumOfAntsContributions += getAntPheromoneContribution(
-      antPath,
-      edge,
-      allEdges
-    )
-  }
-  return (1 - rou) * oldPheromoneAmount + sumOfAntsContributions
+function getCurrentAntContribution(
+  antPath: string[],
+  allEdgesLengths: Record<string, number>
+): number {
+  const antPathLength = getAntPathLength(antPath, allEdgesLengths)
+  return 1 / antPathLength
 }
 
-// Returns cities after updating the pheromone amnt & line width.
 function updatePheromoneAmount(
   cities: City[],
   currentIterationAntPaths: string[][],
   rou: number
 ) {
-  const allEdges = getLengthOfAllEdges(cities)
-  cities.forEach((city) => {
+  const allEdgesLengths = getLengthOfAllEdges(cities)
+  const antsContributionToEdges = getAntsContributionToEdges(
+    cities,
+    currentIterationAntPaths
+  )
+  /*  console.log(
+    `AntsContributionToEdges=${JSON.stringify(antsContributionToEdges)}`
+  ) */
+  for (const city of cities) {
     for (let neighborName in city.pheromoneTo) {
       const linkingEdge = city.name + neighborName
       const oldPheromoneAmount = city.pheromoneTo[neighborName]
       const oldLineWidth = city.lineWidthTo[neighborName]
-      const newPheromoneAmount = getNewPheromoneAmount(
+      const newPheromoneAmount = getNewPheromoneAmount2(
         oldPheromoneAmount,
-        currentIterationAntPaths,
+        antsContributionToEdges,
         linkingEdge,
-        rou,
-        allEdges
+        rou
       )
       const newLineWidth = getNewLineWidth(
         oldLineWidth,
@@ -306,51 +366,21 @@ function updatePheromoneAmount(
       city.pheromoneTo[neighborName] = newPheromoneAmount
       city.lineWidthTo[neighborName] = newLineWidth
     }
-  })
+  }
   // Mark all cities as unvisited for the next iteration
   cities.forEach((city) => (city.isVisited = false))
   return cities
 }
 
-// Returns [ACOIterations, antsChosenPaths]
-export function AS(
-  cities: City[],
-  colonySize = 30,
-  alpha = 1,
-  beta = 3,
-  rou = 0.1,
-  iterations = 200,
-  speed = 300
-): [City[][], string[][][]] {
-  console.log("AS")
-  // Array will be used later for the animation of: Graph & Matrix
-  let ACOIterations: City[][] = []
-
-  // Array will be used later for the animation of: List of cities visited by each ant in order.
-  let antsChosenPaths: string[][][] = []
-
-  for (let iter = 0; iter < iterations; iter++) {
-    let currentIterationAntPaths: string[][] = []
-
-    for (let i = 0; i < colonySize; i++) {
-      // Deep Copy of cities since I'm modifying the array directly. This modification will affect the other ants during the same iteration.
-      let copiedCities = citiesDeepCopy(cities)
-
-      let orderOfVisitedCities = getVisitedCitiesInOrder(
-        copiedCities,
-        alpha,
-        beta
-      )
-      currentIterationAntPaths.push(orderOfVisitedCities)
-    }
-    antsChosenPaths.push(currentIterationAntPaths)
-    // Update the values of pheromone & lineWidths. Also store the previous values for the animation.
-    const updatedCities = updatePheromoneAmount(
-      citiesDeepCopy(cities),
-      currentIterationAntPaths,
-      rou
-    )
-    ACOIterations.push(updatedCities)
+function getNewPheromoneAmount2(
+  oldPheromoneAmount: number,
+  antsContributionToEdges: Record<string, number>,
+  linkingEdge: string,
+  rou: number
+) {
+  let antsContribution = 0
+  if (linkingEdge in antsContributionToEdges) {
+    antsContribution = antsContributionToEdges[linkingEdge]
   }
-  return [ACOIterations, antsChosenPaths]
+  return (1 - rou) * oldPheromoneAmount + antsContribution
 }
