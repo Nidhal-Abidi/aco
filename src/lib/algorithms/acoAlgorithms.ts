@@ -13,10 +13,9 @@ export function AS(
   cities: City[],
   colonySize = 30,
   alpha = 1,
-  beta = 3,
+  beta = 1,
   rou = 0.1,
-  iterations = 100,
-  speed = 300
+  iterations = 100
 ): [City[][], string[][][]] {
   console.log("AS")
   // Array will be used later for the animation of: Graph & Matrix
@@ -47,6 +46,7 @@ export function AS(
       currentIterationAntPaths,
       rou
     )
+    //console.log(getHighest5EdgesOfPheromone(updatedCities))
     ACOIterations.push(updatedCities)
   }
   return [ACOIterations, antsChosenPaths]
@@ -257,9 +257,6 @@ function getNewLineWidth(
     newPheromoneAmount
   )
   const newLineWidth = roundUpTo3Decimal(oldLineWidth * (1 + percentageDiff))
-  /* console.log(
-    `B-Pher=${oldPheromoneAmount}, A-Pher=${newPheromoneAmount}, %Diff=${percentageDiff}, B-Line=${oldLineWidth}, A-Line=${newLineWidth}`
-  ) */
   if (newLineWidth < 0.1) {
     return 0.1
   } else if (newLineWidth > 5) {
@@ -296,7 +293,10 @@ function getAntPathLength(
       console.error(`Edge-${currentEdge} doesn't exist in the object allEdges!`)
     }
   }
-  return pathLength
+  // Add the edge length from last visited city to the first visited city (Since it was marked as visited in the beginning & won't be added 2 times to this array)
+  return (
+    pathLength + allEdges[antPathArr[0] + antPathArr[antPathArr.length - 1]]
+  )
 }
 
 function getAntsContributionToEdges(
@@ -344,7 +344,7 @@ function updatePheromoneAmount(
     cities,
     currentIterationAntPaths
   )
-  /*  console.log(
+  /* console.log(
     `AntsContributionToEdges=${JSON.stringify(antsContributionToEdges)}`
   ) */
   for (const city of cities) {
@@ -352,7 +352,7 @@ function updatePheromoneAmount(
       const linkingEdge = city.name + neighborName
       const oldPheromoneAmount = city.pheromoneTo[neighborName]
       const oldLineWidth = city.lineWidthTo[neighborName]
-      const newPheromoneAmount = getNewPheromoneAmount2(
+      const newPheromoneAmount = getNewPheromoneAmount(
         oldPheromoneAmount,
         antsContributionToEdges,
         linkingEdge,
@@ -372,7 +372,7 @@ function updatePheromoneAmount(
   return cities
 }
 
-function getNewPheromoneAmount2(
+function getNewPheromoneAmount(
   oldPheromoneAmount: number,
   antsContributionToEdges: Record<string, number>,
   linkingEdge: string,
@@ -383,4 +383,24 @@ function getNewPheromoneAmount2(
     antsContribution = antsContributionToEdges[linkingEdge]
   }
   return (1 - rou) * oldPheromoneAmount + antsContribution
+}
+
+function getHighest5EdgesOfPheromone(cities: City[]) {
+  let rslt: [string, number, number][] = []
+  let repetition = new Set()
+  for (const city of cities) {
+    for (const neighborName in city.pheromoneTo) {
+      let currEdge = city.name + neighborName
+      let altEdge = neighborName + city.name
+      if (repetition.has(currEdge) || repetition.has(altEdge)) continue
+      repetition.add(currEdge)
+      rslt.push([
+        city.name + neighborName,
+        city.pheromoneTo[neighborName],
+        city.distanceTo[neighborName],
+      ])
+    }
+  }
+  rslt.sort((a, b) => a[1] - b[1])
+  return rslt.slice(-5)
 }

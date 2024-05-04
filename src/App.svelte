@@ -1,12 +1,13 @@
 <script lang="ts">
-  import { AS, type City } from "./lib/acoAlgorithms"
-  function initializePheromone(cities: City[], initialVal: number) {
-    cities.forEach((city) => {
-      for (let neighbor in city.pheromoneTo) {
-        city.pheromoneTo[neighbor] = initialVal
-      }
-    })
+  import { AS, type City } from "./lib/algorithms/acoAlgorithms"
+  import Canvas from "./lib/components/Canvas/Canvas.svelte"
+  import { normalizeDistance } from "./lib/helpers/tspDistanceNormalization"
+  import { initializePheromone } from "./lib/helpers/tspInitialPheromone"
+
+  function getRandomArbitrary(min: number, max: number) {
+    return Math.random() * (max - min) + min
   }
+
   const cities: City[] = [
     {
       x: 100,
@@ -14,7 +15,7 @@
       name: "c_0",
       isVisited: false,
       distanceTo: {
-        c_1: 170,
+        c_1: 153,
         c_2: 471.7,
         c_3: 650,
         c_4: 500.9,
@@ -33,15 +34,15 @@
       },
     },
     {
-      x: 180,
+      x: 130,
       y: 250,
       name: "c_1",
       isVisited: false,
       distanceTo: {
-        c_0: 170,
-        c_2: 302.3,
-        c_3: 501.2,
-        c_4: 436.8,
+        c_0: 153,
+        c_2: 333,
+        c_3: 545.6,
+        c_4: 485.1,
       },
       pheromoneTo: {
         c_0: 0,
@@ -63,7 +64,7 @@
       isVisited: false,
       distanceTo: {
         c_0: 471.7,
-        c_1: 302.3,
+        c_1: 333,
         c_3: 270.2,
         c_4: 446.5,
       },
@@ -87,7 +88,7 @@
       isVisited: false,
       distanceTo: {
         c_0: 650,
-        c_1: 501.2,
+        c_1: 545.6,
         c_2: 270.2,
         c_4: 360.6,
       },
@@ -111,7 +112,7 @@
       isVisited: false,
       distanceTo: {
         c_0: 500.9,
-        c_1: 436.8,
+        c_1: 485.1,
         c_2: 446.5,
         c_3: 360.6,
       },
@@ -129,14 +130,19 @@
       },
     },
   ]
+
   initializePheromone(cities, 1)
-  const [ACOIterations, antsChosenPaths] = AS(cities)
-  console.log("ACOIterations =", ACOIterations)
+  normalizeDistance(cities)
+  const alpha = 3 //getRandomArbitrary(0.001, 100)
+  const beta = 1 //getRandomArbitrary(0.001, 100)
+  console.log("alpha=", alpha, ",beta=", beta)
+  const [ACOIterations, antsChosenPaths] = AS(cities, 30, 10, 1, 0.1, 200)
+  //console.log("ACOIterations =", ACOIterations)
   console.log("antsChosenPaths =", antsChosenPaths)
 </script>
 
 <main>
-  <h1>Hi ACO!</h1>
+  <Canvas {cities} ACOIter={ACOIterations} />
 </main>
 
 <style>
