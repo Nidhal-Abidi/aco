@@ -136,8 +136,8 @@
   const alpha = 3 //getRandomArbitrary(0.001, 100)
   const beta = 1 //getRandomArbitrary(0.001, 100)
   console.log("alpha=", alpha, ",beta=", beta)
-  const [ACOIterations, antsChosenPaths] = AS(cities, 30, 10, 1, 0.1, 200)
-  //console.log("ACOIterations =", ACOIterations)
+  const [ACOIterations, antsChosenPaths] = AS(cities, 30, alpha, beta, 0.1, 200)
+  console.log("ACOIterations =", ACOIterations)
   console.log("antsChosenPaths =", antsChosenPaths)
 </script>
 

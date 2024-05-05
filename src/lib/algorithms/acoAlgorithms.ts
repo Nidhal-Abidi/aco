@@ -17,7 +17,6 @@ export function AS(
   rou = 0.1,
   iterations = 100
 ): [City[][], string[][][]] {
-  console.log("AS")
   // Array will be used later for the animation of: Graph & Matrix
   let ACOIterations: City[][] = []
 
@@ -26,9 +25,22 @@ export function AS(
 
   let updatedCities = citiesDeepCopy(cities)
 
+  const allEdgesLengths = getLengthOfAllEdges(cities)
+  // For now it's hardcoded
+  console.log(
+    "ABSOLUTE BEST PATH=",
+    getAntPathLength(["c_0", "c_1", "c_2", "c_3", "c_4"], allEdgesLengths)
+  )
+  let globalBestPath = ["c_4", "c_2", "c_1", "c_3", "c_0"]
+  let globalBestPathLength = getAntPathLength(globalBestPath, allEdgesLengths)
+  console.log(
+    "globalBestPath=",
+    globalBestPath,
+    ", Length=",
+    globalBestPathLength
+  )
   for (let iter = 0; iter < iterations; iter++) {
     let currentIterationAntPaths: string[][] = []
-
     for (let i = 0; i < colonySize; i++) {
       // Deep Copy of cities since I'm modifying the array directly. This modification will affect the other ants during the same iteration.
 
@@ -40,6 +52,21 @@ export function AS(
       currentIterationAntPaths.push(orderOfVisitedCities)
     }
     antsChosenPaths.push(currentIterationAntPaths)
+    let [currentIterBestPath, currentIterBestPathLength] =
+      getCurrentIterBestPath(currentIterationAntPaths, allEdgesLengths)
+    if (currentIterBestPathLength < globalBestPathLength) {
+      globalBestPath = [...currentIterBestPath]
+      globalBestPathLength = currentIterBestPathLength
+      console.log(
+        `************Global Best Path changed to ${globalBestPath}, L=${globalBestPathLength}!! ************`
+      )
+    }
+    console.log(
+      "currenIterBestPath=",
+      currentIterBestPath,
+      ", Length=",
+      currentIterBestPathLength
+    )
     // Update the values of pheromone & lineWidths. Also store the previous values for the animation.
     updatedCities = updatePheromoneAmount(
       citiesDeepCopy(cities),
@@ -83,6 +110,24 @@ function getVisitedCitiesInOrder(cities: City[], alpha: number, beta: number) {
 function selectRandomCity(cities: City[]) {
   return cities[getRandomIntInclusive(0, cities.length - 1)]
 }
+
+// Best path for now is the one with shortest distance.
+function getCurrentIterBestPath(
+  currentIterationAntPaths: string[][],
+  allEdgesLengths: Record<string, number>
+): [string[], number] {
+  let currenIterBestPath: string[] = []
+  let currenIterBestPathLength = 999999
+  for (const antPath of currentIterationAntPaths) {
+    const antPathLength = getAntPathLength(antPath, allEdgesLengths)
+    if (antPathLength < currenIterBestPathLength) {
+      currenIterBestPath = [...antPath]
+      currenIterBestPathLength = antPathLength
+    }
+  }
+  return [currenIterBestPath, currenIterBestPathLength]
+}
+
 function markCityAsVisited(cities: City[], cityName: string) {
   // Modify the array in place
   for (let city of cities) {
@@ -257,6 +302,7 @@ function getNewLineWidth(
     newPheromoneAmount
   )
   const newLineWidth = roundUpTo3Decimal(oldLineWidth * (1 + percentageDiff))
+
   if (newLineWidth < 0.1) {
     return 0.1
   } else if (newLineWidth > 5) {
@@ -284,6 +330,7 @@ function getAntPathLength(
   antPathArr: string[],
   allEdges: Record<string, number>
 ) {
+  if (antPathArr.length === 0) return 0
   let pathLength = 0
   for (let i = 0; i < antPathArr.length - 1; i++) {
     let currentEdge = antPathArr[i] + antPathArr[i + 1]
