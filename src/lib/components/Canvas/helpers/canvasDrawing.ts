@@ -57,7 +57,7 @@ function clearCanvas(
   height: number,
   ctx: CanvasRenderingContext2D
 ) {
-  console.log("Clearing the canvas")
+  //console.log("Clearing the canvas")
   ctx.clearRect(0, 0, width, height)
 }
 

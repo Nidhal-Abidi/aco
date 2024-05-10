@@ -11,11 +11,11 @@ export type City = {
 // Returns [ACOIterations, antsChosenPaths]
 export function AS(
   cities: City[],
-  colonySize = 30,
+  colonySize = 20,
   alpha = 1,
   beta = 1,
-  rou = 0.1,
-  iterations = 100
+  rou = 0.05,
+  iterations = 200
 ): [City[][], string[][][]] {
   // Array will be used later for the animation of: Graph & Matrix
   let ACOIterations: City[][] = []
@@ -31,14 +31,8 @@ export function AS(
     "ABSOLUTE BEST PATH=",
     getAntPathLength(["c_0", "c_1", "c_2", "c_3", "c_4"], allEdgesLengths)
   )
-  let globalBestPath = ["c_4", "c_2", "c_1", "c_3", "c_0"]
-  let globalBestPathLength = getAntPathLength(globalBestPath, allEdgesLengths)
-  console.log(
-    "globalBestPath=",
-    globalBestPath,
-    ", Length=",
-    globalBestPathLength
-  )
+  let globalBestPath = []
+  let globalBestPathLength = 99999999999
   for (let iter = 0; iter < iterations; iter++) {
     let currentIterationAntPaths: string[][] = []
     for (let i = 0; i < colonySize; i++) {
@@ -58,15 +52,15 @@ export function AS(
       globalBestPath = [...currentIterBestPath]
       globalBestPathLength = currentIterBestPathLength
       console.log(
-        `************Global Best Path changed to ${globalBestPath}, L=${globalBestPathLength}!! ************`
+        `************[Iter=${iter}] Global Best Path changed to ${globalBestPath}, L=${globalBestPathLength}!! ************`
       )
     }
-    console.log(
+    /* console.log(
       "currenIterBestPath=",
       currentIterBestPath,
       ", Length=",
       currentIterBestPathLength
-    )
+    ) */
     // Update the values of pheromone & lineWidths. Also store the previous values for the animation.
     updatedCities = updatePheromoneAmount(
       citiesDeepCopy(cities),
@@ -330,7 +324,6 @@ function getAntPathLength(
   antPathArr: string[],
   allEdges: Record<string, number>
 ) {
-  if (antPathArr.length === 0) return 0
   let pathLength = 0
   for (let i = 0; i < antPathArr.length - 1; i++) {
     let currentEdge = antPathArr[i] + antPathArr[i + 1]
@@ -430,24 +423,4 @@ function getNewPheromoneAmount(
     antsContribution = antsContributionToEdges[linkingEdge]
   }
   return (1 - rou) * oldPheromoneAmount + antsContribution
-}
-
-function getHighest5EdgesOfPheromone(cities: City[]) {
-  let rslt: [string, number, number][] = []
-  let repetition = new Set()
-  for (const city of cities) {
-    for (const neighborName in city.pheromoneTo) {
-      let currEdge = city.name + neighborName
-      let altEdge = neighborName + city.name
-      if (repetition.has(currEdge) || repetition.has(altEdge)) continue
-      repetition.add(currEdge)
-      rslt.push([
-        city.name + neighborName,
-        city.pheromoneTo[neighborName],
-        city.distanceTo[neighborName],
-      ])
-    }
-  }
-  rslt.sort((a, b) => a[1] - b[1])
-  return rslt.slice(-5)
 }

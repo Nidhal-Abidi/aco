@@ -15,7 +15,7 @@ export function animate(
 
     ;(function f1(cities, iteration) {
       setTimeout(() => {
-        console.log("Iter=", iteration)
+        //console.log("Iter=", iteration)
         displayCities(cities, canvasWidth, canvasHeight, ctx)
       }, speed * iteration)
       requestAnimationFrame(() => {

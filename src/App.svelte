@@ -1,7 +1,11 @@
 <script lang="ts">
   import { AS, type City } from "./lib/algorithms/acoAlgorithms"
   import Canvas from "./lib/components/Canvas/Canvas.svelte"
-  import { normalizeDistance } from "./lib/helpers/tspDistanceNormalization"
+  import {
+    minMaxDistanceNormalization,
+    decimalDistanceNormalization,
+    ZScoreDistanceNormalization,
+  } from "./lib/helpers/tspDistanceNormalization"
   import { initializePheromone } from "./lib/helpers/tspInitialPheromone"
 
   function getRandomArbitrary(min: number, max: number) {
@@ -131,12 +135,15 @@
     },
   ]
 
-  initializePheromone(cities, 1)
-  normalizeDistance(cities)
-  const alpha = 3 //getRandomArbitrary(0.001, 100)
-  const beta = 1 //getRandomArbitrary(0.001, 100)
+  initializePheromone(cities, 5)
+  //minMaxDistanceNormalization(cities)
+  //decimalDistanceNormalization(cities)
+  //ZScoreDistanceNormalization(cities)
+  const alpha = 1 //getRandomArbitrary(0.001, 100)
+  const beta = 3 //getRandomArbitrary(0.001, 100)
+  const rou = 0.1
   console.log("alpha=", alpha, ",beta=", beta)
-  const [ACOIterations, antsChosenPaths] = AS(cities, 30, alpha, beta, 0.1, 200)
+  const [ACOIterations, antsChosenPaths] = AS(cities, 30, alpha, beta, rou, 200)
   console.log("ACOIterations =", ACOIterations)
   console.log("antsChosenPaths =", antsChosenPaths)
 </script>
