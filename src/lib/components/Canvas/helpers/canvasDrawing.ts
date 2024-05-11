@@ -61,33 +61,62 @@ function clearCanvas(
   ctx.clearRect(0, 0, width, height)
 }
 
-function showCityEdges(cities: City[], ctx: CanvasRenderingContext2D) {
+function showCityEdges(
+  cities: City[],
+  globalBestPathEdges: string[],
+  ctx: CanvasRenderingContext2D
+) {
   let remainingCities = deepCopyOfCitiesArray(cities)
   while (remainingCities.length > 1) {
     let currentCity = remainingCities[0]
     for (let i = 1; i < remainingCities.length; i++) {
       let neighborName = remainingCities[i].name
-      drawEdge(
-        currentCity.x,
-        currentCity.y,
-        remainingCities[i].x,
-        remainingCities[i].y,
-        currentCity.lineWidthTo[neighborName],
-        ctx
-      )
+      if (
+        areEdgesInPath(
+          globalBestPathEdges,
+          currentCity.name + neighborName,
+          neighborName + currentCity.name
+        )
+      ) {
+        // This edge is part of the global best path for the current iteration
+        drawEdge(
+          currentCity.x,
+          currentCity.y,
+          remainingCities[i].x,
+          remainingCities[i].y,
+          5,
+          ctx,
+          "green"
+        )
+      } else {
+        // Ordinary edge
+        drawEdge(
+          currentCity.x,
+          currentCity.y,
+          remainingCities[i].x,
+          remainingCities[i].y,
+          currentCity.lineWidthTo[neighborName],
+          ctx
+        )
+      }
     }
     remainingCities.shift()
   }
 }
 
+function areEdgesInPath(path: string[], edge: string, inverseEdge: string) {
+  return path.includes(edge) || path.includes(inverseEdge)
+}
+
 export function displayCities(
   cities: City[],
+  globalBestPathEdges: string[],
   canvasWidth: number,
   canvasHeight: number,
   ctx: CanvasRenderingContext2D
 ) {
   clearCanvas(canvasWidth, canvasHeight, ctx)
-  showCityEdges(cities, ctx)
+  showCityEdges(cities, globalBestPathEdges, ctx)
   cities.forEach((city) => {
     drawCity(city.x, city.y, city.name, ctx)
   })

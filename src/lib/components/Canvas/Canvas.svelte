@@ -1,12 +1,18 @@
 <script lang="ts">
   import { onMount } from "svelte"
-  import type { City } from "../../algorithms/acoAlgorithms"
   import { animate } from "./helpers/animation"
   import { displayCities } from "./helpers/canvasDrawing"
+  import { extractGlobalBestPathPerIteration } from "./helpers/bestAntPaths"
 
   export let cities
   export let ACOIter
+  export let antsChosenPaths
   let canvas: HTMLCanvasElement
+  const globalBestPathPerIteration = extractGlobalBestPathPerIteration(
+    cities,
+    antsChosenPaths
+  )
+  console.log("GlobalBestPathsArr=", globalBestPathPerIteration)
 
   onMount(() => {
     const ctx = canvas.getContext("2d")!
@@ -15,11 +21,19 @@
     canvas.height = 850
     const btn = document.querySelector("button")!
 
-    displayCities(cities, canvas.width, canvas.height, ctx)
+    // Display all the cities before any animation
+    displayCities(cities, [], canvas.width, canvas.height, ctx)
 
     btn.addEventListener("click", () => {
       //let iter = 0
-      animate(ACOIter, 0, canvas.width, canvas.height, ctx)
+      animate(
+        ACOIter,
+        globalBestPathPerIteration,
+        0,
+        canvas.width,
+        canvas.height,
+        ctx
+      )
     })
   })
 </script>

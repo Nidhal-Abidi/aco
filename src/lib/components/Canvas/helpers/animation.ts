@@ -4,25 +4,38 @@ import { displayCities } from "./canvasDrawing"
 
 export function animate(
   ACOIterations: City[][],
+  globalBestPathsPerIteration: string[][],
   iter: number,
   canvasWidth: number,
   canvasHeight: number,
   ctx: CanvasRenderingContext2D,
-  speed = 100
+  speed = 50
 ) {
-  if (iter < ACOIterations.length) {
-    // Get the new values of the next drawing
-
-    ;(function f1(cities, iteration) {
+  ;(function f1(cities, iteration) {
+    if (iter < ACOIterations.length) {
+      // Get the new values of the next drawing
       setTimeout(() => {
-        //console.log("Iter=", iteration)
-        displayCities(cities, canvasWidth, canvasHeight, ctx)
+        console.log(`Best[${iter}]=`, globalBestPathsPerIteration[iter])
+        console.log(`Cities[${iter}]=`, ACOIterations[iter])
+        displayCities(
+          cities,
+          globalBestPathsPerIteration[iter],
+          canvasWidth,
+          canvasHeight,
+          ctx
+        )
       }, speed * iteration)
-      requestAnimationFrame(() => {
-        animate(ACOIterations, iter, canvasWidth, canvasHeight, ctx)
-      })
-    })(deepCopyOfCitiesArray(ACOIterations[iter]), iter)
 
-    iter += 1
-  }
+      requestAnimationFrame(() => {
+        animate(
+          ACOIterations,
+          globalBestPathsPerIteration,
+          iter + 1,
+          canvasWidth,
+          canvasHeight,
+          ctx
+        )
+      })
+    }
+  })(deepCopyOfCitiesArray(ACOIterations[iter]), iter)
 }

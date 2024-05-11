@@ -310,7 +310,7 @@ function getPercentageDifference(originalVal: number, newValue: number) {
   return originalVal === 0 ? 1 : (newValue - originalVal) / originalVal
 }
 
-function getLengthOfAllEdges(cities: City[]) {
+export function getLengthOfAllEdges(cities: City[]) {
   const allEdgesLengths: Record<string, number> = {}
   for (let city of cities) {
     for (let neighborName in city.distanceTo) {
@@ -320,22 +320,25 @@ function getLengthOfAllEdges(cities: City[]) {
   return allEdgesLengths
 }
 
-function getAntPathLength(
+export function getAntPathLength(
   antPathArr: string[],
-  allEdges: Record<string, number>
+  allEdgesLengths: Record<string, number>
 ) {
   let pathLength = 0
   for (let i = 0; i < antPathArr.length - 1; i++) {
     let currentEdge = antPathArr[i] + antPathArr[i + 1]
-    if (currentEdge in allEdges) {
-      pathLength += allEdges[currentEdge]
+    if (currentEdge in allEdgesLengths) {
+      pathLength += allEdgesLengths[currentEdge]
     } else {
-      console.error(`Edge-${currentEdge} doesn't exist in the object allEdges!`)
+      console.error(
+        `Edge-${currentEdge} doesn't exist in the object allEdgesLengths!`
+      )
     }
   }
   // Add the edge length from last visited city to the first visited city (Since it was marked as visited in the beginning & won't be added 2 times to this array)
   return (
-    pathLength + allEdges[antPathArr[0] + antPathArr[antPathArr.length - 1]]
+    pathLength +
+    allEdgesLengths[antPathArr[0] + antPathArr[antPathArr.length - 1]]
   )
 }
 

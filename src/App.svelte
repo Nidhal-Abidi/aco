@@ -142,14 +142,13 @@
   const alpha = 1 //getRandomArbitrary(0.001, 100)
   const beta = 3 //getRandomArbitrary(0.001, 100)
   const rou = 0.1
-  console.log("alpha=", alpha, ",beta=", beta)
   const [ACOIterations, antsChosenPaths] = AS(cities, 30, alpha, beta, rou, 200)
   console.log("ACOIterations =", ACOIterations)
   console.log("antsChosenPaths =", antsChosenPaths)
 </script>
 
 <main>
-  <Canvas {cities} ACOIter={ACOIterations} />
+  <Canvas {cities} ACOIter={ACOIterations} {antsChosenPaths} />
 </main>
 
 <style>
