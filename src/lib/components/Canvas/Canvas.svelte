@@ -12,7 +12,6 @@
     cities,
     antsChosenPaths
   )
-  console.log("GlobalBestPathsArr=", globalBestPathPerIteration)
 
   onMount(() => {
     const ctx = canvas.getContext("2d")!
@@ -25,7 +24,6 @@
     displayCities(cities, [], canvas.width, canvas.height, ctx)
 
     btn.addEventListener("click", () => {
-      //let iter = 0
       animate(
         ACOIter,
         globalBestPathPerIteration,

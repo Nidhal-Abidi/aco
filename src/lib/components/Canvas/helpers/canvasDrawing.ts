@@ -29,7 +29,7 @@ function drawEdge(
   y_b: number,
   lineWidth: number,
   ctx: CanvasRenderingContext2D,
-  color = "lightblue"
+  color = "gray"
 ) {
   let prevLineWidth = ctx.lineWidth
   ctx.strokeStyle = color
@@ -66,7 +66,34 @@ function showCityEdges(
   globalBestPathEdges: string[],
   ctx: CanvasRenderingContext2D
 ) {
+  // 1) Draw the ordinay edges
   let remainingCities = deepCopyOfCitiesArray(cities)
+  while (remainingCities.length > 1) {
+    let currentCity = remainingCities[0]
+    for (let i = 1; i < remainingCities.length; i++) {
+      let neighborName = remainingCities[i].name
+      if (
+        !areEdgesInPath(
+          globalBestPathEdges,
+          currentCity.name + neighborName,
+          neighborName + currentCity.name
+        )
+      ) {
+        // Ordinary edge
+        drawEdge(
+          currentCity.x,
+          currentCity.y,
+          remainingCities[i].x,
+          remainingCities[i].y,
+          currentCity.lineWidthTo[neighborName],
+          ctx
+        )
+      }
+    }
+    remainingCities.shift()
+  }
+  // 2) Draw the edges of the best path
+  remainingCities = deepCopyOfCitiesArray(cities)
   while (remainingCities.length > 1) {
     let currentCity = remainingCities[0]
     for (let i = 1; i < remainingCities.length; i++) {
@@ -86,17 +113,7 @@ function showCityEdges(
           remainingCities[i].y,
           5,
           ctx,
-          "green"
-        )
-      } else {
-        // Ordinary edge
-        drawEdge(
-          currentCity.x,
-          currentCity.y,
-          remainingCities[i].x,
-          remainingCities[i].y,
-          currentCity.lineWidthTo[neighborName],
-          ctx
+          "lightgreen"
         )
       }
     }

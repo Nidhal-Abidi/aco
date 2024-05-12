@@ -26,11 +26,6 @@ export function AS(
   let updatedCities = citiesDeepCopy(cities)
 
   const allEdgesLengths = getLengthOfAllEdges(cities)
-  // For now it's hardcoded
-  console.log(
-    "ABSOLUTE BEST PATH=",
-    getAntPathLength(["c_0", "c_1", "c_2", "c_3", "c_4"], allEdgesLengths)
-  )
   let globalBestPath = []
   let globalBestPathLength = 99999999999
   for (let iter = 0; iter < iterations; iter++) {
@@ -65,7 +60,8 @@ export function AS(
     updatedCities = updatePheromoneAmount(
       citiesDeepCopy(cities),
       currentIterationAntPaths,
-      rou
+      rou,
+      colonySize
     )
     //console.log(getHighest5EdgesOfPheromone(updatedCities))
     ACOIterations.push(updatedCities)
@@ -305,6 +301,19 @@ function getNewLineWidth(
   return newLineWidth
 }
 
+function getNewLineWidth2(
+  nbrAntsWhoCrossedTheEdge: number,
+  colonySize: number,
+  minLineWidth = 0.01,
+  maxLineWidth = 5
+) {
+  const scalingFactor = (maxLineWidth - minLineWidth) / colonySize
+  let newLineWidth = 0.2 * nbrAntsWhoCrossedTheEdge
+  if (newLineWidth < 0.01) return 0.01
+  else if (newLineWidth > 5) return 5
+  else return newLineWidth
+}
+
 function getPercentageDifference(originalVal: number, newValue: number) {
   if (originalVal == 0 && newValue == 0) return 0
   return originalVal === 0 ? 1 : (newValue - originalVal) / originalVal
@@ -380,13 +389,14 @@ function getCurrentAntContribution(
 function updatePheromoneAmount(
   cities: City[],
   currentIterationAntPaths: string[][],
-  rou: number
+  rou: number,
+  colonySize: number
 ) {
-  const allEdgesLengths = getLengthOfAllEdges(cities)
   const antsContributionToEdges = getAntsContributionToEdges(
     cities,
     currentIterationAntPaths
   )
+  const nbrOfAntsPerEdge = getNbrOfAntsPerEdge(currentIterationAntPaths)
   /* console.log(
     `AntsContributionToEdges=${JSON.stringify(antsContributionToEdges)}`
   ) */
@@ -394,17 +404,21 @@ function updatePheromoneAmount(
     for (let neighborName in city.pheromoneTo) {
       const linkingEdge = city.name + neighborName
       const oldPheromoneAmount = city.pheromoneTo[neighborName]
-      const oldLineWidth = city.lineWidthTo[neighborName]
+      //const oldLineWidth = city.lineWidthTo[neighborName]
       const newPheromoneAmount = getNewPheromoneAmount(
         oldPheromoneAmount,
         antsContributionToEdges,
         linkingEdge,
         rou
       )
-      const newLineWidth = getNewLineWidth(
+      /* const newLineWidth = getNewLineWidth(
         oldLineWidth,
         oldPheromoneAmount,
         newPheromoneAmount
+      ) */
+      const newLineWidth = getNewLineWidth2(
+        nbrOfAntsPerEdge[linkingEdge],
+        colonySize
       )
       city.pheromoneTo[neighborName] = newPheromoneAmount
       city.lineWidthTo[neighborName] = newLineWidth
@@ -413,6 +427,34 @@ function updatePheromoneAmount(
   // Mark all cities as unvisited for the next iteration
   cities.forEach((city) => (city.isVisited = false))
   return cities
+}
+
+function getNbrOfAntsPerEdge(currentIterationAntPaths: string[][]) {
+  const nbrOfAntsPerEdge: Record<string, number> = {}
+
+  for (const antPath of currentIterationAntPaths) {
+    for (let i = 0; i < antPath.length - 1; i++) {
+      const edge = antPath[i] + antPath[i + 1]
+      const reverseEdge = antPath[i + 1] + antPath[i]
+      if (edge in nbrOfAntsPerEdge && reverseEdge in nbrOfAntsPerEdge) {
+        nbrOfAntsPerEdge[edge] += 1
+        nbrOfAntsPerEdge[reverseEdge] += 1
+      } else {
+        nbrOfAntsPerEdge[edge] = 1
+        nbrOfAntsPerEdge[reverseEdge] = 1
+      }
+    }
+    const edge = antPath[antPath.length - 1] + antPath[0]
+    const reverseEdge = antPath[0] + antPath[antPath.length - 1]
+    if (edge in nbrOfAntsPerEdge && reverseEdge in nbrOfAntsPerEdge) {
+      nbrOfAntsPerEdge[edge] += 1
+      nbrOfAntsPerEdge[reverseEdge] += 1
+    } else {
+      nbrOfAntsPerEdge[edge] = 1
+      nbrOfAntsPerEdge[reverseEdge] = 1
+    }
+  }
+  return nbrOfAntsPerEdge
 }
 
 function getNewPheromoneAmount(
