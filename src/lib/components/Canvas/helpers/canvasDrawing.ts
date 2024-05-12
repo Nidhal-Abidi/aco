@@ -66,7 +66,7 @@ function showCityEdges(
   globalBestPathEdges: string[],
   ctx: CanvasRenderingContext2D
 ) {
-  // 1) Draw the ordinay edges
+  // 1) Draw the ordinay edges (They're seperated so that bestpath would always be drawn on top of the oridnary edges)
   let remainingCities = deepCopyOfCitiesArray(cities)
   while (remainingCities.length > 1) {
     let currentCity = remainingCities[0]

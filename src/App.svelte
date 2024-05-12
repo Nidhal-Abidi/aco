@@ -399,7 +399,7 @@
   initializePheromone(cities, 1)
   const alpha = 3
   const beta = 1
-  const rou = 0.1
+  const rou = 0.5
   const [ACOIterations, antsChosenPaths] = AS(cities, 30, alpha, beta, rou, 200)
   console.log("ACOIterations =", ACOIterations)
   //console.log("antsChosenPaths =", antsChosenPaths)

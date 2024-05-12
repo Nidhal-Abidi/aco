@@ -283,40 +283,16 @@ function citiesDeepCopy(cities: City[]): City[] {
 }
 
 function getNewLineWidth(
-  oldLineWidth: number,
-  oldPheromoneAmount: number,
-  newPheromoneAmount: number
-) {
-  const percentageDiff = getPercentageDifference(
-    oldPheromoneAmount,
-    newPheromoneAmount
-  )
-  const newLineWidth = roundUpTo3Decimal(oldLineWidth * (1 + percentageDiff))
-
-  if (newLineWidth < 0.1) {
-    return 0.1
-  } else if (newLineWidth > 5) {
-    return 5
-  }
-  return newLineWidth
-}
-
-function getNewLineWidth2(
   nbrAntsWhoCrossedTheEdge: number,
   colonySize: number,
   minLineWidth = 0.01,
-  maxLineWidth = 5
+  maxLineWidth = 4
 ) {
   const scalingFactor = (maxLineWidth - minLineWidth) / colonySize
-  let newLineWidth = 0.2 * nbrAntsWhoCrossedTheEdge
+  let newLineWidth = scalingFactor * nbrAntsWhoCrossedTheEdge
   if (newLineWidth < 0.01) return 0.01
-  else if (newLineWidth > 5) return 5
-  else return newLineWidth
-}
-
-function getPercentageDifference(originalVal: number, newValue: number) {
-  if (originalVal == 0 && newValue == 0) return 0
-  return originalVal === 0 ? 1 : (newValue - originalVal) / originalVal
+  else if (newLineWidth > 4) return 4
+  else return roundUpTo3Decimal(newLineWidth)
 }
 
 export function getLengthOfAllEdges(cities: City[]) {
@@ -416,10 +392,18 @@ function updatePheromoneAmount(
         oldPheromoneAmount,
         newPheromoneAmount
       ) */
-      const newLineWidth = getNewLineWidth2(
-        nbrOfAntsPerEdge[linkingEdge],
-        colonySize
-      )
+      let newLineWidth = 0.01
+      if (linkingEdge in nbrOfAntsPerEdge) {
+        // There's at least 1 ant that crossed this edge
+        newLineWidth = getNewLineWidth(
+          nbrOfAntsPerEdge[linkingEdge],
+          colonySize
+        )
+      } else {
+        // There's NOT A SINGLE ANT that have crossed this edge
+        newLineWidth = getNewLineWidth(0, colonySize)
+      }
+
       city.pheromoneTo[neighborName] = newPheromoneAmount
       city.lineWidthTo[neighborName] = newLineWidth
     }
