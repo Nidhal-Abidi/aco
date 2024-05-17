@@ -2,16 +2,18 @@
   import { onMount } from "svelte"
   import { animate } from "./helpers/animation"
   import { displayCities } from "./helpers/canvasDrawing"
-  import { extractGlobalBestPathPerIteration } from "./helpers/bestAntPaths"
+  import {
+    convertPathToEdges,
+    extractGlobalBestPathPerIteration,
+  } from "./helpers/bestAntPaths"
 
   export let cities
   export let ACOIter
-  export let antsChosenPaths
   let canvas: HTMLCanvasElement
-  const globalBestPathPerIteration = extractGlobalBestPathPerIteration(
-    cities,
-    antsChosenPaths
-  )
+  export let globalBestPathPerIteration: string[][]
+
+  let globalBestPathPerIterationConverted =
+    globalBestPathPerIteration.map(convertPathToEdges)
 
   onMount(() => {
     const ctx = canvas.getContext("2d")!
@@ -26,7 +28,7 @@
     btn.addEventListener("click", () => {
       animate(
         ACOIter,
-        globalBestPathPerIteration,
+        globalBestPathPerIterationConverted,
         0,
         canvas.width,
         canvas.height,
@@ -36,7 +38,6 @@
   })
 </script>
 
-<button>Start Animation</button>
 <canvas id="canvas" bind:this={canvas}></canvas>
 
 <style>

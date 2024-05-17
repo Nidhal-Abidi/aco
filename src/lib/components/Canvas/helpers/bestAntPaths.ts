@@ -8,7 +8,6 @@ export function extractGlobalBestPathPerIteration(
   cities: City[],
   antsChosenPaths: string[][][]
 ) {
-  // Contains the EDGES of the global best path for each iteration
   let globalBestPathsPerIteration: string[][] = []
 
   const allEdgesLengths = getLengthOfAllEdges(cities)
@@ -23,9 +22,25 @@ export function extractGlobalBestPathPerIteration(
       globalBestPath = [...localBestPath]
       globalBestPathLength = localBestPathLength
     }
-    globalBestPathsPerIteration.push(convertPathToEdges(globalBestPath))
+    globalBestPathsPerIteration.push(globalBestPath)
   }
   return globalBestPathsPerIteration
+}
+
+export function extractLocalBestPathPerIteration(
+  cities: City[],
+  antsChosenPaths: string[][][]
+) {
+  let localBestPathsPerIter: string[][] = []
+  const allEdgesLengths = getLengthOfAllEdges(cities)
+  for (const currentIterPaths of antsChosenPaths) {
+    const [localBestPath, localBestPathLength] = getLocalBestPath(
+      currentIterPaths,
+      allEdgesLengths
+    )
+    localBestPathsPerIter.push(localBestPath)
+  }
+  return localBestPathsPerIter
 }
 
 function getLocalBestPath(
@@ -44,7 +59,7 @@ function getLocalBestPath(
   return [localBestPath, localBestPathLength]
 }
 
-function convertPathToEdges(antPath: string[]) {
+export function convertPathToEdges(antPath: string[]) {
   let antPathEdges = []
   for (let i = 0; i < antPath.length - 1; i++) {
     antPathEdges.push(antPath[i] + antPath[i + 1])

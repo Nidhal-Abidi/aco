@@ -1,6 +1,12 @@
 <script lang="ts">
   import { AS, type City } from "./lib/algorithms/acoAlgorithms"
   import Canvas from "./lib/components/Canvas/Canvas.svelte"
+  import {
+    extractGlobalBestPathPerIteration,
+    extractLocalBestPathPerIteration,
+  } from "./lib/components/Canvas/helpers/bestAntPaths"
+  import GlobalBestPath from "./lib/components/Chart/GlobalBestPath.svelte"
+  import LocalBestPath from "./lib/components/Chart/LocalBestPath.svelte"
   import { initializePheromone } from "./lib/helpers/tspInitialPheromone"
 
   const cities: City[] = [
@@ -401,12 +407,23 @@
   const beta = 1
   const rou = 0.5
   const [ACOIterations, antsChosenPaths] = AS(cities, 30, alpha, beta, rou, 200)
-  console.log("ACOIterations =", ACOIterations)
-  //console.log("antsChosenPaths =", antsChosenPaths)
+  //console.log("ACOIterations =", ACOIterations)
+  console.log("antsChosenPaths =", antsChosenPaths)
+  const globalBestPathPerIteration = extractGlobalBestPathPerIteration(
+    cities,
+    antsChosenPaths
+  )
+  const localBestPathPerIteration = extractLocalBestPathPerIteration(
+    cities,
+    antsChosenPaths
+  )
 </script>
 
 <main>
-  <Canvas {cities} ACOIter={ACOIterations} {antsChosenPaths} />
+  <button>Start Animation</button>
+  <Canvas {cities} ACOIter={ACOIterations} {globalBestPathPerIteration} />
+  <GlobalBestPath {globalBestPathPerIteration} {cities} />
+  <LocalBestPath {cities} {localBestPathPerIteration} />
 </main>
 
 <style>
