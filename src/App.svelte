@@ -7,6 +7,7 @@
   } from "./lib/components/Canvas/helpers/bestAntPaths"
   import GlobalBestPath from "./lib/components/Chart/GlobalBestPath.svelte"
   import LocalBestPath from "./lib/components/Chart/LocalBestPath.svelte"
+  import UserControls from "./lib/components/UserControls.svelte"
   import { initializePheromone } from "./lib/helpers/tspInitialPheromone"
 
   const cities: City[] = [
@@ -405,7 +406,7 @@
   initializePheromone(cities, 1)
   const alpha = 3
   const beta = 1
-  const rou = 0.5
+  const rou = 0.1
   const [ACOIterations, antsChosenPaths] = AS(cities, 30, alpha, beta, rou, 200)
   //console.log("ACOIterations =", ACOIterations)
   console.log("antsChosenPaths =", antsChosenPaths)
@@ -419,12 +420,50 @@
   )
 </script>
 
+<header>
+  <UserControls />
+</header>
+
 <main>
-  <button>Start Animation</button>
-  <Canvas {cities} ACOIter={ACOIterations} {globalBestPathPerIteration} />
-  <GlobalBestPath {globalBestPathPerIteration} {cities} />
-  <LocalBestPath {cities} {localBestPathPerIteration} />
+  <div class="cities-container">
+    <Canvas {cities} ACOIter={ACOIterations} {globalBestPathPerIteration} />
+  </div>
 </main>
 
+<footer>
+  <div class="chart-container">
+    <GlobalBestPath {globalBestPathPerIteration} {cities} />
+  </div>
+  <div class="chart-container">
+    <LocalBestPath {cities} {localBestPathPerIteration} />
+  </div>
+</footer>
+
 <style>
+  header {
+    background-color: lightcoral;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem 0.75rem;
+    padding: 0.5rem 0 0.5rem 0.5rem;
+  }
+  main {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .cities-container {
+    align-self: flex-start;
+  }
+  footer {
+    height: 20%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+  }
+  .chart-container {
+    flex-grow: 2;
+  }
 </style>

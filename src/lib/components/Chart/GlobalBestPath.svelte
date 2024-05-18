@@ -15,13 +15,17 @@
     ctx = chartCanvas.getContext("2d")!
     let chart = new Chart(ctx, {
       type: "line",
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+      },
       data: {
         labels: chartLabels,
         datasets: [
           {
             label: "Global Shortest Distance",
-            backgroundColor: "rgb(255, 99, 132)",
-            borderColor: "rgb(255, 99, 132)",
+            backgroundColor: "rgb(34, 139, 34)",
+            borderColor: "rgb(34, 139, 34)",
             data: chartValues,
           },
         ],

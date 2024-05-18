@@ -15,6 +15,10 @@
     ctx = chartCanvas.getContext("2d")!
     let chart = new Chart(ctx, {
       type: "line",
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+      },
       data: {
         labels: chartLabels,
         datasets: [

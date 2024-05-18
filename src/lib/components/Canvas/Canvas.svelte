@@ -2,10 +2,7 @@
   import { onMount } from "svelte"
   import { animate } from "./helpers/animation"
   import { displayCities } from "./helpers/canvasDrawing"
-  import {
-    convertPathToEdges,
-    extractGlobalBestPathPerIteration,
-  } from "./helpers/bestAntPaths"
+  import { convertPathToEdges } from "./helpers/bestAntPaths"
 
   export let cities
   export let ACOIter
@@ -18,8 +15,8 @@
   onMount(() => {
     const ctx = canvas.getContext("2d")!
     // You can set the width & height to whatever value you want later.
-    canvas.width = 750
-    canvas.height = 850
+    canvas.width = 650
+    canvas.height = 530
     const btn = document.querySelector("button")!
 
     // Display all the cities before any animation
@@ -42,10 +39,8 @@
 
 <style>
   #canvas {
+    background-color: #9d9d9d;
     position: relative;
-    background-color: #242526;
-    height: 100%;
     left: 0;
-    top: 2rem;
   }
 </style>
