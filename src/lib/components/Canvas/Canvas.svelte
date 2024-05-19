@@ -39,7 +39,7 @@
 
 <style>
   #canvas {
-    background-color: #9d9d9d;
+    background-color: #1a1818;
     position: relative;
     left: 0;
   }
