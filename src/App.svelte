@@ -403,25 +403,64 @@
     },
   ]
 
-  initializePheromone(cities, 1)
-  const alpha = 3
-  const beta = 1
-  const rou = 0.1
-  const [ACOIterations, antsChosenPaths] = AS(cities, 30, alpha, beta, rou, 200)
-  //console.log("ACOIterations =", ACOIterations)
-  console.log("antsChosenPaths =", antsChosenPaths)
-  const globalBestPathPerIteration = extractGlobalBestPathPerIteration(
+  let userControls = {
+    acoMode: "aco",
+    colonySize: 30,
+    nbrOfIterations: 200,
+    alpha: 3,
+    beta: 1,
+    rho: 0.1,
+    initialPheromone: 1,
+    sound: "on",
+    speed: "normal",
+  }
+
+  initializePheromone(cities, userControls.initialPheromone)
+  let [ACOIterations, antsChosenPaths] = AS(
+    cities,
+    userControls.colonySize,
+    userControls.alpha,
+    userControls.beta,
+    userControls.rho,
+    userControls.nbrOfIterations
+  )
+  let globalBestPathPerIteration = extractGlobalBestPathPerIteration(
     cities,
     antsChosenPaths
   )
-  const localBestPathPerIteration = extractLocalBestPathPerIteration(
+  let localBestPathPerIteration = extractLocalBestPathPerIteration(
     cities,
     antsChosenPaths
   )
+
+  function updateUserControls(e: CustomEvent) {
+    // Get the params chosen by the user for this algo run.
+    console.log(e.detail)
+    userControls = JSON.parse(JSON.stringify(e.detail))
+
+    // Run the algo on the new params & pass the new values as props to the components
+    initializePheromone(cities, userControls.initialPheromone)
+    ;[ACOIterations, antsChosenPaths] = AS(
+      cities,
+      userControls.colonySize,
+      userControls.alpha,
+      userControls.beta,
+      userControls.rho,
+      userControls.nbrOfIterations
+    )
+    globalBestPathPerIteration = extractGlobalBestPathPerIteration(
+      cities,
+      antsChosenPaths
+    )
+    localBestPathPerIteration = extractLocalBestPathPerIteration(
+      cities,
+      antsChosenPaths
+    )
+  }
 </script>
 
 <header>
-  <UserControls />
+  <UserControls on:startAnimation={updateUserControls} />
 </header>
 
 <main>
