@@ -46,9 +46,9 @@ export function AS(
     if (currentIterBestPathLength < globalBestPathLength) {
       globalBestPath = [...currentIterBestPath]
       globalBestPathLength = currentIterBestPathLength
-      console.log(
+      /* console.log(
         `************[Iter=${iter}] Global Best Path changed to ${globalBestPath}, L=${globalBestPathLength}!! ************`
-      )
+      ) */
     }
     /* console.log(
       "currenIterBestPath=",

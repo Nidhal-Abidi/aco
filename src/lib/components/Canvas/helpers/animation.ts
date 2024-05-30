@@ -15,7 +15,6 @@ export function animate(
     if (iter < ACOIterations.length) {
       // Get the new values of the next drawing
       setTimeout(() => {
-        console.log(`Best[${iter}]=`, globalBestPathsPerIteration[iter])
         displayCities(
           cities,
           globalBestPathsPerIteration[iter],
