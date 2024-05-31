@@ -1,19 +1,32 @@
 <script lang="ts">
   import { Chart } from "chart.js/auto"
-  import { onMount } from "svelte"
-  import { getChartXAxisValues, getChartYAxisValues } from "./ChartDataPoints"
+  import { beforeUpdate, onMount } from "svelte"
+  import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
 
   export let localBestPathPerIteration
   export let cities
 
   let chartCanvas: HTMLCanvasElement
-  let ctx
-  let chartValues = getChartYAxisValues(cities, localBestPathPerIteration)
-  let chartLabels = getChartXAxisValues(localBestPathPerIteration)
+  let chart: Chart<"line", number[], number>
+  let ctx: CanvasRenderingContext2D
+  let chartValues: number[] = []
+  let chartLabels: number[] = []
+
+  beforeUpdate(() => {
+    if (localBestPathPerIteration.length > 0) {
+      const yAxisValues = getChartYAxisValues(cities, localBestPathPerIteration)
+
+      for (let i = 0; i < yAxisValues.length; i++) {
+        setTimeout(() => {
+          addDataPoint(chart, yAxisValues[i])
+        }, 150 * i)
+      }
+    }
+  })
 
   onMount(() => {
     ctx = chartCanvas.getContext("2d")!
-    let chart = new Chart(ctx, {
+    chart = new Chart(ctx, {
       type: "line",
       options: {
         responsive: true,

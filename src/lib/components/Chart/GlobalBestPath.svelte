@@ -1,29 +1,36 @@
 <script lang="ts">
   import { Chart } from "chart.js/auto"
-  import { onMount } from "svelte"
-  import { getChartXAxisValues, getChartYAxisValues } from "./ChartDataPoints"
-
-  function addDataPoint(chart: Chart<"line", any[], any>, dataPoint: number) {
-    const data = chart.data
-    if (data.datasets.length > 0) {
-      data.labels?.push(data.labels.length + 1)
-      data.datasets[0].data.push(dataPoint)
-      chart.update()
-    }
-  }
+  import { beforeUpdate, onMount } from "svelte"
+  import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
 
   export let globalBestPathPerIteration
   export let cities
   export let speed
 
   let chartCanvas: HTMLCanvasElement
-  let ctx
+  let chart: Chart<"line", number[], number>
+  let ctx: CanvasRenderingContext2D
   let chartValues: number[] = []
   let chartLabels: number[] = []
 
+  beforeUpdate(() => {
+    if (globalBestPathPerIteration.length > 0) {
+      const yAxisValues = getChartYAxisValues(
+        cities,
+        globalBestPathPerIteration
+      )
+
+      for (let i = 0; i < yAxisValues.length; i++) {
+        setTimeout(() => {
+          addDataPoint(chart, yAxisValues[i])
+        }, 150 * i)
+      }
+    }
+  })
+
   onMount(() => {
     ctx = chartCanvas.getContext("2d")!
-    let chart = new Chart(ctx, {
+    chart = new Chart(ctx, {
       type: "line",
       options: {
         responsive: true,
@@ -40,21 +47,6 @@
           },
         ],
       },
-    })
-
-    const startAnimationBtn = document.querySelector("#start-animation")!
-    startAnimationBtn.addEventListener("click", () => {
-      const yAxisValues = getChartYAxisValues(
-        cities,
-        globalBestPathPerIteration
-      )
-      console.log("From Global Chart:", yAxisValues.length)
-
-      for (let i = 0; i < yAxisValues.length; i++) {
-        setTimeout(() => {
-          addDataPoint(chart, yAxisValues[i])
-        }, 150 * i)
-      }
     })
   })
 </script>

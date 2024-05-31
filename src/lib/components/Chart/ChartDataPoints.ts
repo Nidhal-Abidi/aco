@@ -1,12 +1,9 @@
+import type { Chart } from "chart.js"
 import {
   getAntPathLength,
   getLengthOfAllEdges,
   type City,
 } from "../../algorithms/acoAlgorithms"
-
-export function getChartXAxisValues(bestPathPerIteration: string[][]) {
-  return bestPathPerIteration.map((currentIter, idx) => idx)
-}
 
 export function getChartYAxisValues(
   cities: City[],
@@ -18,4 +15,16 @@ export function getChartYAxisValues(
     yAxisValues.push(getAntPathLength(currentIterBestPath, allEdgesLengths))
   }
   return yAxisValues
+}
+
+export function addDataPoint(
+  chart: Chart<"line", any[], any>,
+  dataPoint: number
+) {
+  const data = chart.data
+  if (data.datasets.length > 0) {
+    data.labels?.push(data.labels.length + 1)
+    data.datasets[0].data.push(dataPoint)
+    chart.update()
+  }
 }

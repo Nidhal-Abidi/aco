@@ -1,28 +1,22 @@
 <script lang="ts">
-  import { onMount } from "svelte"
+  import { beforeUpdate, onMount } from "svelte"
   import { animate } from "./helpers/animation"
   import { displayCities } from "./helpers/canvasDrawing"
   import { convertPathToEdges } from "./helpers/bestAntPaths"
 
   export let cities
   export let ACOIter
-  let canvas: HTMLCanvasElement
   export let globalBestPathPerIteration: string[][]
+  let canvas: HTMLCanvasElement
+  let ctx: CanvasRenderingContext2D
 
-  let globalBestPathPerIterationConverted =
-    globalBestPathPerIteration.map(convertPathToEdges)
+  let globalBestPathPerIterationConverted = []
 
-  onMount(() => {
-    const ctx = canvas.getContext("2d")!
-    // You can set the width & height to whatever value you want later.
-    canvas.width = 650
-    canvas.height = 530
-    const btn = document.querySelector("#start-animation")!
+  beforeUpdate(() => {
+    globalBestPathPerIterationConverted =
+      globalBestPathPerIteration.map(convertPathToEdges)
 
-    // Display all the cities before any animation
-    displayCities(cities, [], canvas.width, canvas.height, ctx)
-
-    btn.addEventListener("click", () => {
+    if (globalBestPathPerIterationConverted.length > 0) {
       animate(
         ACOIter,
         globalBestPathPerIterationConverted,
@@ -31,7 +25,17 @@
         canvas.height,
         ctx
       )
-    })
+    }
+  })
+  onMount(() => {
+    console.log("[Canvas]:", globalBestPathPerIteration.length)
+    ctx = canvas.getContext("2d")!
+    // You can set the width & height to whatever value you want later.
+    canvas.width = 650
+    canvas.height = 530
+
+    // Display all the cities before any animation
+    displayCities(cities, [], canvas.width, canvas.height, ctx)
   })
 </script>
 

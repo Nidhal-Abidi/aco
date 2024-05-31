@@ -9,12 +9,13 @@ export function animate(
   canvasWidth: number,
   canvasHeight: number,
   ctx: CanvasRenderingContext2D,
-  speed = 50
+  speed = 150
 ) {
   ;(function f1(cities, iteration) {
     if (iter < ACOIterations.length) {
       // Get the new values of the next drawing
       setTimeout(() => {
+        console.log("iter=", iter)
         displayCities(
           cities,
           globalBestPathsPerIteration[iter],
