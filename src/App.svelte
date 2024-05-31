@@ -435,8 +435,8 @@
 
   function updateUserControls(e: CustomEvent) {
     // Get the params chosen by the user for this algo run.
-    console.log(e.detail)
     userControls = JSON.parse(JSON.stringify(e.detail))
+    console.log("userControls:", userControls)
 
     // Run the algo on the new params & pass the new values as props to the components
     initializePheromone(cities, userControls.initialPheromone)
@@ -448,6 +448,7 @@
       userControls.rho,
       userControls.nbrOfIterations
     )
+
     globalBestPathPerIteration = extractGlobalBestPathPerIteration(
       cities,
       antsChosenPaths
@@ -471,7 +472,11 @@
 
 <footer>
   <div class="chart-container">
-    <GlobalBestPath {globalBestPathPerIteration} {cities} />
+    <GlobalBestPath
+      globalBestPathPerIteration={[]}
+      {cities}
+      speed={userControls.speed}
+    />
   </div>
   <div class="chart-container">
     <LocalBestPath {cities} {localBestPathPerIteration} />
@@ -479,15 +484,6 @@
 </footer>
 
 <style>
-  header {
-    background-color: lightcoral;
-    display: flex;
-    justify-content: flex-start;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 1rem 0.75rem;
-    padding: 0.5rem 0 0.5rem 0.5rem;
-  }
   main {
     display: flex;
     justify-content: space-between;

@@ -17,7 +17,7 @@
     // You can set the width & height to whatever value you want later.
     canvas.width = 650
     canvas.height = 530
-    const btn = document.querySelector("button")!
+    const btn = document.querySelector("#start-animation")!
 
     // Display all the cities before any animation
     displayCities(cities, [], canvas.width, canvas.height, ctx)

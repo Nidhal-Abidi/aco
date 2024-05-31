@@ -139,11 +139,19 @@
     </select>
   </label>
 
-  <button type="reset">Start Animation</button>
-  <button type="submit">Reset Animation</button>
+  <button type="submit" id="start-animation">Start Animation</button>
+  <button type="reset" id="reset-animation">Reset Animation</button>
 </form>
 
 <style>
+  form {
+    background-color: lightcoral;
+    display: flex;
+    justify-content: flex-start;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    padding: 0.5rem 0 0.5rem 0.5rem;
+  }
   label {
     font-size: 1rem;
   }

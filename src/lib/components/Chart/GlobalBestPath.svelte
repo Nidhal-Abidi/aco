@@ -3,13 +3,23 @@
   import { onMount } from "svelte"
   import { getChartXAxisValues, getChartYAxisValues } from "./ChartDataPoints"
 
+  function addDataPoint(chart: Chart<"line", any[], any>, dataPoint: number) {
+    const data = chart.data
+    if (data.datasets.length > 0) {
+      data.labels?.push(data.labels.length + 1)
+      data.datasets[0].data.push(dataPoint)
+      chart.update()
+    }
+  }
+
   export let globalBestPathPerIteration
   export let cities
+  export let speed
 
   let chartCanvas: HTMLCanvasElement
   let ctx
-  let chartValues = getChartYAxisValues(cities, globalBestPathPerIteration)
-  let chartLabels = getChartXAxisValues(globalBestPathPerIteration)
+  let chartValues: number[] = []
+  let chartLabels: number[] = []
 
   onMount(() => {
     ctx = chartCanvas.getContext("2d")!
@@ -30,6 +40,21 @@
           },
         ],
       },
+    })
+
+    const startAnimationBtn = document.querySelector("#start-animation")!
+    startAnimationBtn.addEventListener("click", () => {
+      const yAxisValues = getChartYAxisValues(
+        cities,
+        globalBestPathPerIteration
+      )
+      console.log("From Global Chart:", yAxisValues.length)
+
+      for (let i = 0; i < yAxisValues.length; i++) {
+        setTimeout(() => {
+          addDataPoint(chart, yAxisValues[i])
+        }, 150 * i)
+      }
     })
   })
 </script>
