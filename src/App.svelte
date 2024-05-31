@@ -415,28 +415,14 @@
     speed: "normal",
   }
 
-  initializePheromone(cities, userControls.initialPheromone)
-  let [ACOIterations, antsChosenPaths] = AS(
-    cities,
-    userControls.colonySize,
-    userControls.alpha,
-    userControls.beta,
-    userControls.rho,
-    userControls.nbrOfIterations
-  )
-  let globalBestPathPerIteration = extractGlobalBestPathPerIteration(
-    cities,
-    antsChosenPaths
-  )
-  let localBestPathPerIteration = extractLocalBestPathPerIteration(
-    cities,
-    antsChosenPaths
-  )
+  let ACOIterations: City[][] = []
+  let antsChosenPaths: string[][][] = []
+  let globalBestPathPerIteration: string[][] = []
+  let localBestPathPerIteration: string[][] = []
 
   function updateUserControls(e: CustomEvent) {
     // Get the params chosen by the user for this algo run.
     userControls = JSON.parse(JSON.stringify(e.detail))
-    console.log("userControls:", userControls)
 
     // Run the algo on the new params & pass the new values as props to the components
     initializePheromone(cities, userControls.initialPheromone)
@@ -473,7 +459,7 @@
 <footer>
   <div class="chart-container">
     <GlobalBestPath
-      globalBestPathPerIteration={[]}
+      {globalBestPathPerIteration}
       {cities}
       speed={userControls.speed}
     />

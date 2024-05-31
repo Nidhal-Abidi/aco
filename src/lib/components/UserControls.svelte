@@ -13,7 +13,7 @@
 
   const dispatch = createEventDispatcher()
 
-  function onSubmit(e: Event) {
+  function onSubmit() {
     dispatch("startAnimation", {
       acoMode: acoMode == undefined ? "aco" : acoMode,
       colonySize: colonySize == undefined ? 30 : colonySize,
