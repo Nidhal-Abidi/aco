@@ -2,6 +2,7 @@
   import { Chart } from "chart.js/auto"
   import { beforeUpdate, onMount } from "svelte"
   import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
+  import { playNotes } from "../../helpers/playNotes"
 
   export let globalBestPathPerIteration
   export let cities
@@ -24,6 +25,7 @@
         setTimeout(
           () => {
             addDataPoint(chart, yAxisValues[i])
+            playNotes((parseInt(speed) / 10) * i, "square")
           },
           parseInt(speed) * i
         )
