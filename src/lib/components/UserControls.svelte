@@ -23,7 +23,7 @@
       rho: rho == undefined ? 0.1 : rho,
       initialPheromone: initialPheromone == undefined ? 1 : initialPheromone,
       sound: sound == undefined ? "on" : sound,
-      speed: speed == undefined ? "normal" : speed,
+      speed: speed == undefined ? "150" : speed,
     })
   }
 </script>
@@ -125,9 +125,9 @@
   <label>
     Speed
     <select name="speed" id="speed" bind:value={speed}>
-      <option value="slow">Slow</option>
-      <option value="normal" selected>Normal</option>
-      <option value="fast">fast</option>
+      <option value="500">Slow</option>
+      <option value="150" selected>Normal</option>
+      <option value="50">fast</option>
     </select>
   </label>
 

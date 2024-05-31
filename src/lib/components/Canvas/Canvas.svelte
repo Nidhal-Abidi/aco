@@ -7,9 +7,10 @@
   export let cities
   export let ACOIter
   export let globalBestPathPerIteration: string[][]
+  export let speed
+
   let canvas: HTMLCanvasElement
   let ctx: CanvasRenderingContext2D
-
   let globalBestPathPerIterationConverted = []
 
   beforeUpdate(() => {
@@ -23,12 +24,12 @@
         0,
         canvas.width,
         canvas.height,
-        ctx
+        ctx,
+        parseInt(speed)
       )
     }
   })
   onMount(() => {
-    console.log("[Canvas]:", globalBestPathPerIteration.length)
     ctx = canvas.getContext("2d")!
     // You can set the width & height to whatever value you want later.
     canvas.width = 650

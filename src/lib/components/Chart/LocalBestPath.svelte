@@ -5,6 +5,7 @@
 
   export let localBestPathPerIteration
   export let cities
+  export let speed
 
   let chartCanvas: HTMLCanvasElement
   let chart: Chart<"line", number[], number>
@@ -17,9 +18,12 @@
       const yAxisValues = getChartYAxisValues(cities, localBestPathPerIteration)
 
       for (let i = 0; i < yAxisValues.length; i++) {
-        setTimeout(() => {
-          addDataPoint(chart, yAxisValues[i])
-        }, 150 * i)
+        setTimeout(
+          () => {
+            addDataPoint(chart, yAxisValues[i])
+          },
+          parseInt(speed) * i
+        )
       }
     }
   })

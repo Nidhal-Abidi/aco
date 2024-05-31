@@ -412,7 +412,7 @@
     rho: 0.1,
     initialPheromone: 1,
     sound: "on",
-    speed: "normal",
+    speed: "150",
   }
 
   let ACOIterations: City[][] = []
@@ -452,7 +452,12 @@
 
 <main>
   <div class="cities-container">
-    <Canvas {cities} ACOIter={ACOIterations} {globalBestPathPerIteration} />
+    <Canvas
+      {cities}
+      ACOIter={ACOIterations}
+      {globalBestPathPerIteration}
+      speed={userControls.speed}
+    />
   </div>
 </main>
 
@@ -465,7 +470,11 @@
     />
   </div>
   <div class="chart-container">
-    <LocalBestPath {cities} {localBestPathPerIteration} />
+    <LocalBestPath
+      {cities}
+      {localBestPathPerIteration}
+      speed={userControls.speed}
+    />
   </div>
 </footer>
 
