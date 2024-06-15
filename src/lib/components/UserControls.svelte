@@ -160,7 +160,7 @@
     font-size: 1rem;
     border: 1px solid dimgray;
     line-height: 1.5;
-    padding: 0.5rem;
+    padding: 0.25rem;
     border-radius: 0.2rem;
     cursor: pointer;
   }

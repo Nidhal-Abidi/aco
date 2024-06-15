@@ -7,6 +7,7 @@
   export let globalBestPathPerIteration
   export let cities
   export let speed
+  export let sound
 
   let chartCanvas: HTMLCanvasElement
   let chart: Chart<"line", number[], number>
@@ -25,7 +26,7 @@
         setTimeout(
           () => {
             addDataPoint(chart, yAxisValues[i])
-            playNotes((parseInt(speed) / 10) * i, "square")
+            sound === "on" && playNotes((parseInt(speed) / 10) * i, "square")
           },
           parseInt(speed) * i
         )

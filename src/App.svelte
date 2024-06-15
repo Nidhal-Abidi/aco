@@ -75,6 +75,7 @@
       {globalBestPathPerIteration}
       {cities}
       speed={userControls.speed}
+      sound={userControls.sound}
     />
   </div>
   <div class="chart-container">
