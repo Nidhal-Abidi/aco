@@ -26,6 +26,10 @@
       speed: speed == undefined ? "150" : speed,
     })
   }
+
+  function resetAnimation() {
+    dispatch("resetAnimation")
+  }
 </script>
 
 <form on:submit|preventDefault={onSubmit}>
@@ -140,7 +144,9 @@
   </label>
 
   <button type="submit" id="start-animation">Start Animation</button>
-  <button type="reset" id="reset-animation">Reset Animation</button>
+  <button type="button" id="reset-animation" on:click={resetAnimation}
+    >Reset Animation</button
+  >
 </form>
 
 <style>

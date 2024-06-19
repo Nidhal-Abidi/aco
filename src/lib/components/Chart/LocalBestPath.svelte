@@ -25,6 +25,28 @@
           parseInt(speed) * i
         )
       }
+    } else {
+      if (chart != undefined) {
+        chart.destroy()
+        chart = new Chart(ctx, {
+          type: "line",
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+          },
+          data: {
+            labels: [],
+            datasets: [
+              {
+                label: "Local Shortest Distance (Per iteration)",
+                backgroundColor: "rgb(0, 119, 190)",
+                borderColor: "rgb(0, 119, 190)",
+                data: [],
+              },
+            ],
+          },
+        })
+      }
     }
   })
 

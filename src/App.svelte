@@ -52,10 +52,18 @@
       antsChosenPaths
     )
   }
+
+  function resetVisualization(e: CustomEvent) {
+    globalBestPathPerIteration = []
+    localBestPathPerIteration = []
+  }
 </script>
 
 <header>
-  <UserControls on:startAnimation={updateUserControls} />
+  <UserControls
+    on:startAnimation={updateUserControls}
+    on:resetAnimation={resetVisualization}
+  />
 </header>
 
 <main>

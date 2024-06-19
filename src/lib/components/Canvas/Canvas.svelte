@@ -27,8 +27,13 @@
         ctx,
         parseInt(speed)
       )
+    } else {
+      if (ctx != undefined) {
+        displayCities(cities, [], 650, 530, ctx)
+      }
     }
   })
+
   onMount(() => {
     ctx = canvas.getContext("2d")!
     // You can set the width & height to whatever value you want later.
