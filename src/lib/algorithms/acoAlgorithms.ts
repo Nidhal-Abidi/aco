@@ -265,7 +265,7 @@ export function getRandomIntInclusive(min: number, max: number) {
   return Math.floor(Math.random() * (maxFloored - minCeiled + 1) + minCeiled)
 }
 
-function citiesDeepCopy(cities: City[]): City[] {
+export function citiesDeepCopy(cities: City[]): City[] {
   let res: City[] = []
   cities.forEach((city) => {
     let copiedCity: City = {

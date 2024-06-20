@@ -9,9 +9,16 @@
   import LocalBestPath from "./lib/components/Chart/LocalBestPath.svelte"
   import UserControls from "./lib/components/UserControls.svelte"
   import { initializePheromone } from "./lib/helpers/tspInitialPheromone"
-  import { cities } from "./lib/helpers/citiesArrays"
+  import {
+    cities5,
+    cities7,
+    cities10,
+    cities15,
+  } from "./lib/helpers/citiesArrays"
+  import { deepCopyOfCitiesArray } from "./lib/helpers/citiesDeepCopy"
 
   let userControls = {
+    nbrOfCities: "10",
     acoMode: "aco",
     colonySize: 30,
     nbrOfIterations: 200,
@@ -27,10 +34,26 @@
   let antsChosenPaths: string[][][] = []
   let globalBestPathPerIteration: string[][] = []
   let localBestPathPerIteration: string[][] = []
+  let cities: City[] = deepCopyOfCitiesArray(cities10)
 
   function updateUserControls(e: CustomEvent) {
     // Get the params chosen by the user for this algo run.
     userControls = JSON.parse(JSON.stringify(e.detail))
+
+    switch (userControls.nbrOfCities) {
+      case "5":
+        cities = deepCopyOfCitiesArray(cities5)
+        break
+      case "7":
+        cities = deepCopyOfCitiesArray(cities7)
+        break
+      case "10":
+        cities = deepCopyOfCitiesArray(cities10)
+        break
+      case "15":
+        cities = deepCopyOfCitiesArray(cities15)
+        break
+    }
 
     // Run the algo on the new params & pass the new values as props to the components
     initializePheromone(cities, userControls.initialPheromone)

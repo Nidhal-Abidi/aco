@@ -1,6 +1,7 @@
 <script lang="ts">
   import { createEventDispatcher } from "svelte"
 
+  let nbrOfCities: number
   let acoMode: string
   let colonySize: number
   let nbrOfIterations: number
@@ -15,6 +16,7 @@
 
   function onSubmit() {
     dispatch("startAnimation", {
+      nbrOfCities: nbrOfCities == undefined ? 10 : nbrOfCities,
       acoMode: acoMode == undefined ? "aco" : acoMode,
       colonySize: colonySize == undefined ? 30 : colonySize,
       nbrOfIterations: nbrOfIterations == undefined ? 200 : nbrOfIterations,
@@ -33,6 +35,16 @@
 </script>
 
 <form on:submit|preventDefault={onSubmit}>
+  <label>
+    Travel Map Selector
+    <select name="nbr-of-cities" id="nbr-of-cities" bind:value={nbrOfCities}>
+      <option value="5">Small Town</option>
+      <option value="7">Medium Town</option>
+      <option value="10" selected>Large Town</option>
+      <option value="15">Metropolis</option>
+    </select>
+  </label>
+
   <label>
     ACO mode
     <select name="aco-mode" id="aco-mode" bind:value={acoMode}>
