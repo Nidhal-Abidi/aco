@@ -155,15 +155,18 @@
     </select>
   </label>
 
-  <button type="submit" id="start-animation">Start Animation</button>
-  <button type="button" id="reset-animation" on:click={resetAnimation}
-    >Reset Animation</button
+  <button type="submit" id="start-animation" class="btn">Start Animation</button
+  >
+  <button
+    type="button"
+    id="reset-animation"
+    class="btn btn-reset"
+    on:click={resetAnimation}>Reset Animation</button
   >
 </form>
 
 <style>
   form {
-    background-color: lightcoral;
     display: flex;
     justify-content: flex-start;
     flex-wrap: wrap;
@@ -181,5 +184,26 @@
     padding: 0.25rem;
     border-radius: 0.2rem;
     cursor: pointer;
+  }
+  .btn {
+    border: 2px solid #04aa6d;
+    background-color: white;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition-duration: 0.4s;
+  }
+
+  .btn:hover {
+    background-color: #04aa6d;
+    color: white;
+  }
+
+  .btn-reset {
+    border-color: #008cba;
+  }
+
+  .btn-reset:hover {
+    background-color: #008cba;
+    color: white;
   }
 </style>
