@@ -375,9 +375,6 @@ function updatePheromoneAmount(
     currentIterationAntPaths
   )
   const nbrOfAntsPerEdge = getNbrOfAntsPerEdge(currentIterationAntPaths)
-  /* console.log(
-    `AntsContributionToEdges=${JSON.stringify(antsContributionToEdges)}`
-  ) */
   for (const city of cities) {
     for (let neighborName in city.pheromoneTo) {
       const linkingEdge = city.name + neighborName
