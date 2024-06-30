@@ -16,6 +16,7 @@
     cities15,
   } from "./lib/helpers/citiesArrays"
   import { deepCopyOfCitiesArray } from "./lib/helpers/citiesDeepCopy"
+  import PheromoneHeatMap from "./lib/components/HeatMap/PheromoneHeatMap.svelte"
 
   let userControls = {
     nbrOfCities: "10",
@@ -74,6 +75,7 @@
       cities,
       antsChosenPaths
     )
+    console.log("ACOIterations=", ACOIterations)
   }
 
   function resetVisualization(e: CustomEvent) {
@@ -96,6 +98,14 @@
       ACOIter={ACOIterations}
       {globalBestPathPerIteration}
       speed={userControls.speed}
+    />
+  </div>
+  <div class="heat-map-container">
+    <PheromoneHeatMap
+      {cities}
+      speed={userControls.speed}
+      {ACOIterations}
+      colonySize={userControls.colonySize}
     />
   </div>
 </main>
@@ -121,7 +131,6 @@
 <style>
   main {
     display: flex;
-    justify-content: space-between;
     align-items: center;
   }
   .cities-container {
@@ -135,5 +144,10 @@
   }
   .chart-container {
     flex-grow: 2;
+  }
+  .heat-map-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
   }
 </style>

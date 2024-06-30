@@ -12,6 +12,7 @@ export function deepCopyOfCitiesArray(citiesArr: City[]) {
       distanceTo: JSON.parse(JSON.stringify(city.distanceTo)),
       pheromoneTo: JSON.parse(JSON.stringify(city.pheromoneTo)),
       lineWidthTo: JSON.parse(JSON.stringify(city.lineWidthTo)),
+      edgeAntFlow: JSON.parse(JSON.stringify(city.edgeAntFlow)),
     }
     res.push(copiedCity)
   }

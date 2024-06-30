@@ -6,16 +6,17 @@ export type City = {
   distanceTo: Record<string, number>
   pheromoneTo: Record<string, number>
   lineWidthTo: Record<string, number>
+  edgeAntFlow: Record<string, number>
 }
 
 // Returns [ACOIterations, antsChosenPaths]
 export function AS(
   cities: City[],
-  colonySize = 20,
-  alpha = 1,
-  beta = 1,
-  rou = 0.05,
-  iterations = 200
+  colonySize: number,
+  alpha: number,
+  beta: number,
+  rou: number,
+  iterations: number
 ): [City[][], string[][][]] {
   // Array will be used later for the animation of: Graph & Matrix
   let ACOIterations: City[][] = []
@@ -64,7 +65,7 @@ export function AS(
       colonySize
     )
     //console.log(getHighest5EdgesOfPheromone(updatedCities))
-    ACOIterations.push(updatedCities)
+    ACOIterations.push(citiesDeepCopy(updatedCities))
   }
   return [ACOIterations, antsChosenPaths]
 }
@@ -276,6 +277,7 @@ export function citiesDeepCopy(cities: City[]): City[] {
       distanceTo: JSON.parse(JSON.stringify(city.distanceTo)),
       pheromoneTo: JSON.parse(JSON.stringify(city.pheromoneTo)),
       lineWidthTo: JSON.parse(JSON.stringify(city.lineWidthTo)),
+      edgeAntFlow: JSON.parse(JSON.stringify(city.edgeAntFlow)),
     }
     res.push(copiedCity)
   })
@@ -407,6 +409,14 @@ function updatePheromoneAmount(
       city.pheromoneTo[neighborName] = newPheromoneAmount
       city.lineWidthTo[neighborName] = newLineWidth
     }
+    // Add how many ants have crossed each edge starting from the current city.
+    const allNeighborsOfCurrentCity = getAllNeigborsOfCity_i(city)
+    const antTrafficFromCurrentCity = retrieveAntTraffic(
+      city.name,
+      nbrOfAntsPerEdge,
+      allNeighborsOfCurrentCity
+    )
+    city.edgeAntFlow = JSON.parse(JSON.stringify(antTrafficFromCurrentCity))
   }
   // Mark all cities as unvisited for the next iteration
   cities.forEach((city) => (city.isVisited = false))
@@ -439,6 +449,23 @@ function getNbrOfAntsPerEdge(currentIterationAntPaths: string[][]) {
     }
   }
   return nbrOfAntsPerEdge
+}
+
+function retrieveAntTraffic(
+  currentCityName: string,
+  nbrOfAntsPerEdge: Record<string, number>,
+  allNeighbors: string[]
+) {
+  let antTraffic: Record<string, number> = {}
+  for (const neighborName of allNeighbors) {
+    const edge = currentCityName + neighborName
+    if (edge in nbrOfAntsPerEdge) {
+      antTraffic[neighborName] = nbrOfAntsPerEdge[edge]
+    } else {
+      antTraffic[neighborName] = 0
+    }
+  }
+  return antTraffic
 }
 
 function getNewPheromoneAmount(
