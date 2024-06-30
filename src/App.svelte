@@ -75,12 +75,12 @@
       cities,
       antsChosenPaths
     )
-    console.log("ACOIterations=", ACOIterations)
   }
 
   function resetVisualization(e: CustomEvent) {
     globalBestPathPerIteration = []
     localBestPathPerIteration = []
+    ACOIterations = []
   }
 </script>
 
