@@ -3,25 +3,45 @@
   import { beforeUpdate, onMount } from "svelte"
   import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
   import { playNotes } from "../../helpers/playNotes"
+  import type { City } from "../../algorithms/acoAlgorithms"
 
-  export let globalBestPathPerIteration
-  export let cities
+  export let globalBestPathPerIteration: string[][]
+  export let cities: City[]
   export let speed
   export let sound
 
   let chartCanvas: HTMLCanvasElement
   let chart: Chart<"line", number[], number>
   let ctx: CanvasRenderingContext2D
-  let chartValues: number[] = []
-  let chartLabels: number[] = []
+
+  function createNewChart() {
+    chart = new Chart(ctx, {
+      type: "line",
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+      },
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Global Shortest Distance",
+            backgroundColor: "rgb(34, 139, 34)",
+            borderColor: "rgb(34, 139, 34)",
+            data: [],
+          },
+        ],
+      },
+    })
+  }
 
   beforeUpdate(() => {
+    const yAxisValues = getChartYAxisValues(cities, globalBestPathPerIteration)
+    if (chart != undefined) {
+      chart.destroy()
+      createNewChart()
+    }
     if (globalBestPathPerIteration.length > 0) {
-      const yAxisValues = getChartYAxisValues(
-        cities,
-        globalBestPathPerIteration
-      )
-
       for (let i = 0; i < yAxisValues.length; i++) {
         setTimeout(
           () => {
@@ -31,51 +51,12 @@
           parseInt(speed) * i
         )
       }
-    } else {
-      if (chart != undefined) {
-        chart.destroy()
-        chart = new Chart(ctx, {
-          type: "line",
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-          },
-          data: {
-            labels: [],
-            datasets: [
-              {
-                label: "Global Shortest Distance",
-                backgroundColor: "rgb(34, 139, 34)",
-                borderColor: "rgb(34, 139, 34)",
-                data: [],
-              },
-            ],
-          },
-        })
-      }
     }
   })
 
   onMount(() => {
     ctx = chartCanvas.getContext("2d")!
-    chart = new Chart(ctx, {
-      type: "line",
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-      },
-      data: {
-        labels: chartLabels,
-        datasets: [
-          {
-            label: "Global Shortest Distance",
-            backgroundColor: "rgb(34, 139, 34)",
-            borderColor: "rgb(34, 139, 34)",
-            data: chartValues,
-          },
-        ],
-      },
-    })
+    createNewChart()
   })
 </script>
 

@@ -10,10 +10,34 @@
   let chartCanvas: HTMLCanvasElement
   let chart: Chart<"line", number[], number>
   let ctx: CanvasRenderingContext2D
-  let chartValues: number[] = []
-  let chartLabels: number[] = []
+
+  function createNewChart() {
+    chart = new Chart(ctx, {
+      type: "line",
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+      },
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Local Shortest Distance (Per iteration)",
+            backgroundColor: "rgb(0, 119, 190)",
+            borderColor: "rgb(0, 119, 190)",
+            data: [],
+            cubicInterpolationMode: "monotone",
+          },
+        ],
+      },
+    })
+  }
 
   beforeUpdate(() => {
+    if (chart != undefined) {
+      chart.destroy()
+      createNewChart()
+    }
     if (localBestPathPerIteration.length > 0) {
       const yAxisValues = getChartYAxisValues(cities, localBestPathPerIteration)
 
@@ -25,52 +49,12 @@
           parseInt(speed) * i
         )
       }
-    } else {
-      if (chart != undefined) {
-        chart.destroy()
-        chart = new Chart(ctx, {
-          type: "line",
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-          },
-          data: {
-            labels: [],
-            datasets: [
-              {
-                label: "Local Shortest Distance (Per iteration)",
-                backgroundColor: "rgb(0, 119, 190)",
-                borderColor: "rgb(0, 119, 190)",
-                data: [],
-              },
-            ],
-          },
-        })
-      }
     }
   })
 
   onMount(() => {
     ctx = chartCanvas.getContext("2d")!
-    chart = new Chart(ctx, {
-      type: "line",
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-      },
-      data: {
-        labels: chartLabels,
-        datasets: [
-          {
-            label: "Local Shortest Distance (Per iteration)",
-            backgroundColor: "rgb(0, 119, 190)",
-            borderColor: "rgb(0, 119, 190)",
-            data: chartValues,
-            cubicInterpolationMode: "monotone",
-          },
-        ],
-      },
-    })
+    createNewChart()
   })
 </script>
 
