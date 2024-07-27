@@ -2,7 +2,7 @@
   import { Chart } from "chart.js/auto"
   import { beforeUpdate, onMount } from "svelte"
   import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
-  import { playNotes } from "../../helpers/playNotes"
+  import { playAntSound } from "../../helpers/playAntSound"
   import type { City } from "../../algorithms/acoAlgorithms"
 
   export let globalBestPathPerIteration: string[][]
@@ -46,7 +46,7 @@
         setTimeout(
           () => {
             addDataPoint(chart, yAxisValues[i])
-            sound === "on" && playNotes((parseInt(speed) / 10) * i, "square")
+            sound === "on" && playAntSound()
           },
           parseInt(speed) * i
         )
