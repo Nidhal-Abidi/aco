@@ -140,7 +140,6 @@
     height: 20%;
     display: flex;
     flex-direction: column;
-    justify-content: flex-end;
   }
   .chart-container {
     flex-grow: 2;

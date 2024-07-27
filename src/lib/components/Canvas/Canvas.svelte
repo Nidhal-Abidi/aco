@@ -50,7 +50,7 @@
 <style>
   #canvas {
     background-color: #1a1818;
-    position: relative;
-    left: 0;
+    min-width: 650px;
+    min-height: 530px;
   }
 </style>
