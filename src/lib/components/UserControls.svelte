@@ -17,7 +17,7 @@
   function onSubmit() {
     dispatch("startAnimation", {
       nbrOfCities: nbrOfCities == undefined ? 10 : nbrOfCities,
-      acoMode: acoMode == undefined ? "aco" : acoMode,
+      acoMode: acoMode == undefined ? "as" : acoMode,
       colonySize: colonySize == undefined ? 30 : colonySize,
       nbrOfIterations: nbrOfIterations == undefined ? 200 : nbrOfIterations,
       alpha: alpha == undefined ? 3 : alpha,
@@ -48,9 +48,9 @@
   <label>
     ACO mode
     <select name="aco-mode" id="aco-mode" bind:value={acoMode}>
-      <option value="aco" selected>Ant Colony System</option>
+      <option value="as" selected>Ant System</option>
+      <option value="elitist">Elitist Ant System</option>
       <option value="max-min-as">Max-Min Ant System</option>
-      <option value="elitist">Elitist</option>
     </select>
   </label>
 

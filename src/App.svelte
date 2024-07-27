@@ -20,7 +20,7 @@
 
   let userControls = {
     nbrOfCities: "10",
-    acoMode: "aco",
+    acoMode: "as",
     colonySize: 30,
     nbrOfIterations: 200,
     alpha: 3,
