@@ -58,7 +58,7 @@ export function AS(
       currentIterBestPathLength
     ) */
     // Update the values of pheromone & lineWidths. Also store the previous values for the animation.
-    updatedCities = updatePheromoneAmount(
+    updatedCities = updateEdgeProperties(
       citiesDeepCopy(cities),
       currentIterationAntPaths,
       rou,
@@ -364,7 +364,7 @@ function getCurrentAntContribution(
   return 1 / antPathLength
 }
 
-function updatePheromoneAmount(
+function updateEdgeProperties(
   cities: City[],
   currentIterationAntPaths: string[][],
   rou: number,
