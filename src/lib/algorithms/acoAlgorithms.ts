@@ -64,7 +64,7 @@ export function AS(
       rou,
       colonySize
     )
-    //console.log(getHighest5EdgesOfPheromone(updatedCities))
+
     ACOIterations.push(citiesDeepCopy(updatedCities))
   }
   return [ACOIterations, antsChosenPaths]
@@ -268,7 +268,7 @@ export function getRandomIntInclusive(min: number, max: number) {
 
 export function citiesDeepCopy(cities: City[]): City[] {
   let res: City[] = []
-  cities.forEach((city) => {
+  for (const city of cities) {
     let copiedCity: City = {
       x: city.x,
       y: city.y,
@@ -280,7 +280,7 @@ export function citiesDeepCopy(cities: City[]): City[] {
       edgeAntFlow: JSON.parse(JSON.stringify(city.edgeAntFlow)),
     }
     res.push(copiedCity)
-  })
+  }
   return res
 }
 
