@@ -435,14 +435,14 @@ function getNbrOfAntsPerEdge(currentIterationAntPaths: string[][]) {
         nbrOfAntsPerEdge[reverseEdge] = 1
       }
     }
-    const edge = antPath[antPath.length - 1] + antPath[0]
-    const reverseEdge = antPath[0] + antPath[antPath.length - 1]
-    if (edge in nbrOfAntsPerEdge && reverseEdge in nbrOfAntsPerEdge) {
-      nbrOfAntsPerEdge[edge] += 1
-      nbrOfAntsPerEdge[reverseEdge] += 1
+    const finalEdge = antPath[antPath.length - 1] + antPath[0]
+    const reverseFinalEdge = antPath[0] + antPath[antPath.length - 1]
+    if (finalEdge in nbrOfAntsPerEdge && reverseFinalEdge in nbrOfAntsPerEdge) {
+      nbrOfAntsPerEdge[finalEdge] += 1
+      nbrOfAntsPerEdge[reverseFinalEdge] += 1
     } else {
-      nbrOfAntsPerEdge[edge] = 1
-      nbrOfAntsPerEdge[reverseEdge] = 1
+      nbrOfAntsPerEdge[finalEdge] = 1
+      nbrOfAntsPerEdge[reverseFinalEdge] = 1
     }
   }
   return nbrOfAntsPerEdge
@@ -456,8 +456,11 @@ function retrieveAntTraffic(
   let antTraffic: Record<string, number> = {}
   for (const neighborName of allNeighbors) {
     const edge = currentCityName + neighborName
+    const reverseEdge = neighborName + currentCityName
     if (edge in nbrOfAntsPerEdge) {
       antTraffic[neighborName] = nbrOfAntsPerEdge[edge]
+    } else if (reverseEdge in nbrOfAntsPerEdge) {
+      antTraffic[neighborName] = nbrOfAntsPerEdge[reverseEdge]
     } else {
       antTraffic[neighborName] = 0
     }

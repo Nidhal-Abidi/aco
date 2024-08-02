@@ -23,7 +23,9 @@ export function getHeatMapData(
       heatMapData.push({
         x: city.name,
         y: neighbor,
-        antCount: roundUpTo3Decimal(city.edgeAntFlow[neighbor] / colonySize),
+        antCount: roundUpTo3Decimal(
+          city.edgeAntFlow[neighbor] / (colonySize * 2)
+        ),
       })
     }
   }
