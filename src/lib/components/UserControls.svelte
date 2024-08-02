@@ -11,6 +11,9 @@
   let initialPheromone: number
   let speed: string
   let sound: string
+  let elitistWeight: number
+
+  $: showElitistWeight = acoMode === "elitist"
 
   const dispatch = createEventDispatcher()
 
@@ -26,6 +29,7 @@
       initialPheromone: initialPheromone == undefined ? 1 : initialPheromone,
       sound: sound == undefined ? "on" : sound,
       speed: speed == undefined ? "150" : speed,
+      elitistWeight: elitistWeight == undefined ? 2 : elitistWeight,
     })
   }
 
@@ -53,6 +57,24 @@
       <option value="max-min-as">Max-Min Ant System</option>
     </select>
   </label>
+
+  {#if showElitistWeight}
+    <label>
+      Elitist Weight
+      <select
+        name="elitist-weight"
+        id="elitist-weight"
+        bind:value={elitistWeight}
+      >
+        <option value="0.1" selected>0.1</option>
+        <option value="0.5">0.5</option>
+        <option value="1">1</option>
+        <option value="2" selected>2</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+      </select>
+    </label>
+  {/if}
 
   <label>
     Colony Size

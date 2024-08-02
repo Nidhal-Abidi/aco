@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AS, type City } from "./lib/algorithms/acoAlgorithms"
+  import { startACOForTSP, type City } from "./lib/algorithms/acoAlgorithms"
   import Canvas from "./lib/components/Canvas/Canvas.svelte"
   import {
     extractGlobalBestPathPerIteration,
@@ -29,6 +29,7 @@
     initialPheromone: 1,
     sound: "on",
     speed: "150",
+    elitistWeight: 2,
   }
 
   let ACOIterations: City[][] = []
@@ -58,13 +59,15 @@
 
     // Run the algo on the new params & pass the new values as props to the components
     initializePheromone(cities, userControls.initialPheromone)
-    ;[ACOIterations, antsChosenPaths] = AS(
+    ;[ACOIterations, antsChosenPaths] = startACOForTSP(
       cities,
-      userControls.colonySize,
-      userControls.alpha,
-      userControls.beta,
-      userControls.rho,
-      userControls.nbrOfIterations
+      userControls.acoMode,
+      Number(userControls.elitistWeight),
+      Number(userControls.colonySize),
+      Number(userControls.alpha),
+      Number(userControls.beta),
+      Number(userControls.rho),
+      Number(userControls.nbrOfIterations)
     )
 
     globalBestPathPerIteration = extractGlobalBestPathPerIteration(
