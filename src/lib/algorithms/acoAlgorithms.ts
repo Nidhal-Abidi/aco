@@ -10,8 +10,10 @@ export type City = {
 }
 
 // Returns [ACOIterations, antsChosenPaths]
-export function AS(
+export function startACOForTSP(
   cities: City[],
+  acoMode: string,
+  elitistWeight: number,
   colonySize: number,
   alpha: number,
   beta: number,
@@ -27,7 +29,7 @@ export function AS(
   let updatedCities = citiesDeepCopy(cities)
 
   const allEdgesLengths = getLengthOfAllEdges(cities)
-  let globalBestPath = []
+  let globalBestPath: string[] = []
   let globalBestPathLength = 99999999999
   for (let iter = 0; iter < iterations; iter++) {
     let currentIterationAntPaths: string[][] = []
@@ -47,23 +49,36 @@ export function AS(
     if (currentIterBestPathLength < globalBestPathLength) {
       globalBestPath = [...currentIterBestPath]
       globalBestPathLength = currentIterBestPathLength
-      /* console.log(
-        `************[Iter=${iter}] Global Best Path changed to ${globalBestPath}, L=${globalBestPathLength}!! ************`
-      ) */
     }
-    /* console.log(
-      "currenIterBestPath=",
-      currentIterBestPath,
-      ", Length=",
-      currentIterBestPathLength
-    ) */
     // Update the values of pheromone & lineWidths. Also store the previous values for the animation.
-    updatedCities = updateEdgeProperties(
-      citiesDeepCopy(cities),
-      currentIterationAntPaths,
-      rou,
-      colonySize
-    )
+    switch (acoMode) {
+      case "as":
+        updatedCities = updateEdgeProperties(
+          citiesDeepCopy(cities),
+          currentIterationAntPaths,
+          rou,
+          colonySize
+        )
+        break
+      case "elitist":
+        // elitistPheromoneUpdate should be called first iif lineWidth depends on  the % of change in the pheromone between iterations
+        updatedCities = elitistPheromoneUpdate(
+          cities,
+          globalBestPath,
+          globalBestPathLength,
+          elitistWeight
+        )
+        updatedCities = updateEdgeProperties(
+          citiesDeepCopy(cities),
+          currentIterationAntPaths,
+          rou,
+          colonySize
+        )
+        break
+
+      default:
+        break
+    }
 
     ACOIterations.push(citiesDeepCopy(updatedCities))
   }
@@ -86,10 +101,9 @@ function getVisitedCitiesInOrder(cities: City[], alpha: number, beta: number) {
     if (nextCity === null) break
     // This shouldn't happen since we're tracking the nbr of visited cities here. But I added it so that TS won't complain.
     if (nextCity === undefined) {
-      console.error(
+      throw new Error(
         "Error: Something wrong happened when getting the nextCity!"
       )
-      break
     }
     markCityAsVisited(cities, nextCity.name)
     visitedCities.push(nextCity.name)
@@ -130,10 +144,11 @@ function markCityAsVisited(cities: City[], cityName: string) {
 }
 
 /**
- * Function returns : A City, if it's Unvisited & was selected by our process.
- *                    null: If all the cities were visited
- *                    undefined: in every other case (Should be error cases)
- * */
+  Function returns : 
+     + "a City": if it's unvisited & was selected by our process.
+     + "null": If all the cities were visited
+     + "undefined": in every other case (Should be error cases)
+*/
 function getNextCityToVisit(
   cities: City[],
   currentCity: City,
@@ -149,15 +164,23 @@ function getNextCityToVisit(
     return getCityByName(cities, unvisitedNeighborsList[0])
 
   let probabilityOfMovingtoNeighbors: number[] = []
+  // sumOfDesires is the same for all the neighbors of a specific city. It's in the denominator of all of them
+  const sumOfDesires = sumOfDesiresOfMovingToAllAllowedCities(
+    currentCity,
+    unvisitedNeighborsList,
+    alpha,
+    beta
+  )
   for (const neighbor of unvisitedNeighborsList) {
     let probability = getProbabilityOfMovingToCity_j(
       currentCity,
       unvisitedNeighborsList,
       neighbor,
+      sumOfDesires,
       alpha,
       beta
     )
-    // console.log(`unvisitedNeighbors [of ${currentCity.name}] = `, unvisitedNeighborsList)
+
     probabilityOfMovingtoNeighbors.push(probability)
   }
   let cumulativeProbability = 0
@@ -165,19 +188,17 @@ function getNextCityToVisit(
   let randomNumber = Math.random()
   for (let i = 0; i < probabilityOfMovingtoNeighbors.length; i++) {
     if (isNaN(probabilityOfMovingtoNeighbors[i])) {
-      console.error(
+      throw new Error(
         "Error while calculating the probabilities of moving to the next city!"
       )
-      break
     }
     cumulativeProbability += probabilityOfMovingtoNeighbors[i]
     if (randomNumber < cumulativeProbability) {
       return getCityByName(cities, unvisitedNeighborsList[i])
     }
   }
-  console.error(
-    `We went through all the cities but randomNumber=${randomNumber} is bigger than cumulative prob=${cumulativeProbability}, probabilityOfMovingtoNeighbors=`,
-    probabilityOfMovingtoNeighbors
+  throw new Error(
+    `We went through all the cities but randomNumber=${randomNumber} is bigger than cumulative prob=${cumulativeProbability}, probabilityOfMovingtoNeighbors=${probabilityOfMovingtoNeighbors}`
   )
 }
 
@@ -209,6 +230,7 @@ export function getProbabilityOfMovingToCity_j(
   currentCity: City,
   unvisitedNeighbors: string[],
   potentialNextCityName: string,
+  sumOfDesires: number,
   alpha: number,
   beta: number
 ) {
@@ -219,14 +241,8 @@ export function getProbabilityOfMovingToCity_j(
   }
   let desireOfMovingToCity_j =
     currentCity.pheromoneTo[potentialNextCityName] ** alpha *
-    (1 / currentCity.distanceTo[potentialNextCityName] ** -beta)
+    (1 / currentCity.distanceTo[potentialNextCityName]) ** beta
 
-  let sumOfDesires = sumOfDesiresOfMovingToAllAllowedCities(
-    currentCity,
-    unvisitedNeighbors,
-    alpha,
-    beta
-  )
   return desireOfMovingToCity_j / sumOfDesires
 }
 
@@ -243,7 +259,7 @@ export function sumOfDesiresOfMovingToAllAllowedCities(
     }
     sum +=
       currentCity.pheromoneTo[neighbor] ** alpha *
-      (1 / currentCity.distanceTo[neighbor] ** -beta)
+      (1 / currentCity.distanceTo[neighbor]) ** beta
   }
   return sum
 }
@@ -323,9 +339,9 @@ export function getAntPathLength(
     }
   }
   // Add the edge length from last visited city to the first visited city (Since it was marked as visited in the beginning & won't be added 2 times to this array)
-  return (
+  return roundUpTo3Decimal(
     pathLength +
-    allEdgesLengths[antPathArr[0] + antPathArr[antPathArr.length - 1]]
+      allEdgesLengths[antPathArr[0] + antPathArr[antPathArr.length - 1]]
   )
 }
 
@@ -379,18 +395,13 @@ function updateEdgeProperties(
     for (let neighborName in city.pheromoneTo) {
       const linkingEdge = city.name + neighborName
       const oldPheromoneAmount = city.pheromoneTo[neighborName]
-      //const oldLineWidth = city.lineWidthTo[neighborName]
       const newPheromoneAmount = getNewPheromoneAmount(
         oldPheromoneAmount,
         antsContributionToEdges,
         linkingEdge,
         rou
       )
-      /* const newLineWidth = getNewLineWidth(
-        oldLineWidth,
-        oldPheromoneAmount,
-        newPheromoneAmount
-      ) */
+
       let newLineWidth = 0.01
       if (linkingEdge in nbrOfAntsPerEdge) {
         // There's at least 1 ant that crossed this edge
@@ -418,6 +429,34 @@ function updateEdgeProperties(
   // Mark all cities as unvisited for the next iteration
   cities.forEach((city) => (city.isVisited = false))
   return cities
+}
+
+function elitistPheromoneUpdate(
+  cities: City[],
+  globalBestPath: string[],
+  globalBestPathLength: number,
+  elitistWeight: number
+) {
+  const setOfglobalBestPathEdges = getGlobalBestPathEdgesSet(globalBestPath)
+  const elitistPheromoneContrib = elitistWeight * (1 / globalBestPathLength)
+  for (const city of cities) {
+    for (const neighbor in city.pheromoneTo) {
+      const edge = city.name + neighbor
+      if (setOfglobalBestPathEdges.has(edge)) {
+        city.pheromoneTo[neighbor] += elitistPheromoneContrib
+      }
+    }
+  }
+  return cities
+}
+
+function getGlobalBestPathEdgesSet(globalBestPath: string[]) {
+  const setOfEdges: Set<string> = new Set()
+  for (let i = 0; i < globalBestPath.length - 1; i++) {
+    setOfEdges.add(globalBestPath[i] + globalBestPath[i + 1])
+  }
+  setOfEdges.add(globalBestPath[globalBestPath.length - 1] + globalBestPath[0])
+  return setOfEdges
 }
 
 function getNbrOfAntsPerEdge(currentIterationAntPaths: string[][]) {

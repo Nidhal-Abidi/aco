@@ -58,7 +58,7 @@
     }
 
     // Run the algo on the new params & pass the new values as props to the components
-    initializePheromone(cities, userControls.initialPheromone)
+    initializePheromone(cities, Number(userControls.initialPheromone))
     ;[ACOIterations, antsChosenPaths] = startACOForTSP(
       cities,
       userControls.acoMode,
