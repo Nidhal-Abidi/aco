@@ -1,6 +1,7 @@
 import type { City } from "../algorithms/acoAlgorithms"
 
 export function deepCopyOfCitiesArray(citiesArr: City[]) {
+  if (citiesArr == undefined) return []
   let res = []
   for (let i = 0; i < citiesArr.length; i++) {
     const city = citiesArr[i]
