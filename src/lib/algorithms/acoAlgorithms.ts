@@ -18,7 +18,8 @@ export function startACOForTSP(
   alpha: number,
   beta: number,
   rou: number,
-  iterations: number
+  iterations: number,
+  progressCallBack: (progress: number) => void
 ): [City[][], string[][][]] {
   // Array will be used later for the animation of: Graph & Matrix
   let ACOIterations: City[][] = []
@@ -81,6 +82,9 @@ export function startACOForTSP(
     }
 
     ACOIterations.push(citiesDeepCopy(updatedCities))
+    if (iter % 25 === 0) {
+      progressCallBack((100 * iter) / iterations)
+    }
   }
   return [ACOIterations, antsChosenPaths]
 }
