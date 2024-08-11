@@ -17,7 +17,7 @@ export function startACOForTSP(
   colonySize: number,
   alpha: number,
   beta: number,
-  rou: number,
+  rho: number,
   iterations: number,
   progressCallBack: (progress: number) => void
 ): [City[][], string[][][]] {
@@ -57,7 +57,7 @@ export function startACOForTSP(
         updatedCities = updateEdgeProperties(
           citiesDeepCopy(cities),
           currentIterationAntPaths,
-          rou,
+          rho,
           colonySize
         )
         break
@@ -72,12 +72,12 @@ export function startACOForTSP(
         updatedCities = updateEdgeProperties(
           citiesDeepCopy(cities),
           currentIterationAntPaths,
-          rou,
+          rho,
           colonySize
         )
         break
 
-      default:
+      case "max-min-as":
         break
     }
 
@@ -387,7 +387,7 @@ function getCurrentAntContribution(
 function updateEdgeProperties(
   cities: City[],
   currentIterationAntPaths: string[][],
-  rou: number,
+  rho: number,
   colonySize: number
 ) {
   const antsContributionToEdges = getAntsContributionToEdges(
@@ -403,7 +403,7 @@ function updateEdgeProperties(
         oldPheromoneAmount,
         antsContributionToEdges,
         linkingEdge,
-        rou
+        rho
       )
 
       let newLineWidth = 0.01
@@ -515,11 +515,11 @@ function getNewPheromoneAmount(
   oldPheromoneAmount: number,
   antsContributionToEdges: Record<string, number>,
   linkingEdge: string,
-  rou: number
+  rho: number
 ) {
   let antsContribution = 0
   if (linkingEdge in antsContributionToEdges) {
     antsContribution = antsContributionToEdges[linkingEdge]
   }
-  return (1 - rou) * oldPheromoneAmount + antsContribution
+  return (1 - rho) * oldPheromoneAmount + antsContribution
 }
