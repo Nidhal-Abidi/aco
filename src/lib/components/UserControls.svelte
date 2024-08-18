@@ -14,6 +14,7 @@
   let elitistWeight: number
 
   $: showElitistWeight = acoMode === "elitist"
+  $: showInitialPheromone = acoMode !== "max-min-as"
 
   const dispatch = createEventDispatcher()
 
@@ -143,22 +144,24 @@
     </select>
   </label>
 
-  <label>
-    Initial Pheromone
-    <select
-      name="initial-pheromone"
-      id="initial-pheromone"
-      bind:value={initialPheromone}
-    >
-      <option value="0">0</option>
-      <option value="1" selected>1</option>
-      <option value="2">2</option>
-      <option value="5">5</option>
-      <option value="10">10</option>
-      <option value="20">20</option>
-      <option value="50">50</option>
-    </select>
-  </label>
+  {#if showInitialPheromone}
+    <label>
+      Initial Pheromone
+      <select
+        name="initial-pheromone"
+        id="initial-pheromone"
+        bind:value={initialPheromone}
+      >
+        <option value="0">0</option>
+        <option value="1" selected>1</option>
+        <option value="2">2</option>
+        <option value="5">5</option>
+        <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50">50</option>
+      </select>
+    </label>
+  {/if}
 
   <label>
     Speed

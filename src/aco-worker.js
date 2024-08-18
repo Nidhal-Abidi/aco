@@ -3,16 +3,20 @@ import {
   extractGlobalBestPathPerIteration,
   extractLocalBestPathPerIteration,
 } from "./lib/components/Canvas/helpers/bestAntPaths"
+import { deepCopyOfCitiesArray } from "./lib/helpers/citiesDeepCopy"
 import { initializePheromone } from "./lib/helpers/tspInitialPheromone"
 
 self.onmessage = function (e) {
   const { cities, userControls } = e.data
 
-  // Initialize pheromone
-  const updatedCities = initializePheromone(
-    cities,
-    Number(userControls.initialPheromone)
-  )
+  let updatedCities = deepCopyOfCitiesArray(cities)
+  if (userControls.acoMode !== "max-min-as") {
+    // Initialize pheromone iif it's not MAX-MIN AS
+    updatedCities = initializePheromone(
+      cities,
+      Number(userControls.initialPheromone)
+    )
+  }
 
   const [ACOIterations, antsChosenPaths] = startACOForTSP(
     updatedCities,
