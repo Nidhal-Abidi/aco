@@ -1,47 +1,60 @@
-# Svelte + TS + Vite
+# Ant Colony Optimization
 
-This template should help get you started developing with Svelte and TypeScript in Vite.
+## Project Overview
 
-## Recommended IDE Setup
+This project implements three variants of the Ant Colony Optimization (ACO) algorithm to solve the Traveling Salesman Problem (TSP). The TSP is a classic optimization problem that seeks the shortest possible route that visits each city exactly once and returns to the starting city. The ACO algorithm is inspired by the behavior of ants in finding the shortest paths from their colony to food sources.
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+### ACO Variants Implemented
 
-## Need an official Svelte framework?
+1. **Ant System (AS):** The standard ACO algorithm where all ants contribute to pheromone updating.
+2. **Elitist Ant System (EAS):** A variant that adds extra pheromone to the best-so-far path, guiding future ants towards it.
+3. **Max-Min Ant System (MMAS):** Focuses on reinforcing the most promising paths by limiting pheromone values within a defined range.
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+### Project Components
 
-## Technical considerations
+**Header (Hyperparameter Controls):**
 
-**Why use this over SvelteKit?**
+- The header contains various parameters that users can adjust to see how they affect the algorithm's performance. The parameters include:
+  - **Travel Map Selector:** Choose between different map sizes (small town, medium town, large town, and metropolis).
+  - **ACO Mode:** Select the ACO variant (Ant System, Elitist Ant System, Max-Min Ant System).
+  - **Colony Size:** Set the number of ants in the colony.
+  - **Iterations Number:** Define the number of iterations.
+  - **Alpha (α):** Set the exploitation factor, which controls the influence of pheromones on ant decisions.
+  - **Beta (β):** Set the exploration factor, which controls the influence of distance on ant decisions.
+  - **Rho (ρ):** Adjust the pheromone evaporation rate.
+  - **Initial Pheromone:** Set the initial amount of pheromone on all edges (not available for Max-Min Ant System).
+  - **Elitist Weight:** Adjust the weight of the extra pheromone in the Elitist Ant System variant.
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+**Canvas:**
 
-This template contains as little as possible to get started with Vite + TypeScript + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+- The canvas visualizes the cities and their connections. Cities are fully connected, and the connections (edges) are represented by lines whose width reflects the amount of pheromone deposited on them. As the algorithm iterates, the line widths change dynamically, and the best-so-far path is highlighted in a distinct color.
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+**Pheromone Heat Map:**
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+- This component displays a matrix where cities are listed on both the x and y axes. Each cell shows the percentage of ants that have crossed a particular edge in the most recent iteration. The values change with each iteration, providing a visual representation of how pheromone concentrations evolve over time.
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+**Global Best Path Chart:**
 
-**Why include `.vscode/extensions.json`?**
+- This chart plots the length of the global best path found by the algorithm over the course of the iterations. The x-axis represents the iteration number, while the y-axis shows the length of the global best path. This chart allows users to see how quickly the algorithm converges towards an optimal solution.
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+**Local Best Path Chart:**
 
-**Why enable `allowJs` in the TS template?**
+- Similar to the Global Best Path Chart, this chart tracks the length of the local best path found by an individual ant in each iteration.
 
-While `allowJs: false` would indeed prevent the use of `.js` files in the project, it does not prevent the use of JavaScript syntax in `.svelte` files. In addition, it would force `checkJs: false`, bringing the worst of both worlds: not being able to guarantee the entire codebase is TypeScript, and also having worse typechecking for the existing JavaScript. In addition, there are valid use cases in which a mixed codebase may be relevant.
+### How to Use the Website
 
-**Why is HMR not preserving my local component state?**
+**Select parameters:**
 
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/rixo/svelte-hmr#svelte-hmr).
+- Use the dropdown menus in the header to select the desired map size, ACO variant, colony size, number of iterations, and other parameters. Tooltips are provided for each option to help you understand their roles.
 
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
+**Run the Simulation:**
 
-```ts
-// store.ts
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
-```
+- Once you've configured the parameters, the simulation will run after clicking the button "Start Animation". Watch as the ants build solutions, the pheromone trails evolve, and the charts update in real time.
+
+**Analyze Results:**
+
+- Examine the final paths and pheromone concentrations on the canvas. Use the Global and Local Best Path Charts to assess the algorithm's performance. Adjust the parameters as needed to explore different behaviors and outcomes.
+
+### License
+
+This project is open-source and available under the MIT License. Feel free to use, modify, and distribute as needed.
