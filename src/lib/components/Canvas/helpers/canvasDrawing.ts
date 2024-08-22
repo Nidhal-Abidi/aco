@@ -31,7 +31,7 @@ function drawEdge(
   y_b: number,
   lineWidth: number,
   ctx: CanvasRenderingContext2D,
-  color = "gray"
+  color = "#696969"
 ) {
   let prevLineWidth = ctx.lineWidth
   ctx.strokeStyle = color
