@@ -40,9 +40,11 @@
 </script>
 
 <form on:submit|preventDefault={onSubmit}>
-  <label class="tooltip">
-    <span class="tooltiptext">Choose a map size (number of cities)</span>
-    Travel Map Selector
+  <label>
+    <span class="tooltip">
+      Travel Map Selector
+      <span class="tooltiptext">Choose a map size (number of cities)</span>
+    </span>
     <select name="nbr-of-cities" id="nbr-of-cities" bind:value={nbrOfCities}>
       <option value="5">Small Town</option>
       <option value="7">Medium Town</option>
@@ -51,9 +53,13 @@
     </select>
   </label>
 
-  <label class="tooltip">
-    <span class="tooltiptext">Select an ACO variant (AS, EAS, or MMAS).</span>
-    ACO mode
+  <label>
+    <span class="tooltip">
+      ACO mode
+      <span class="tooltiptext"
+        >Select an ACO variant (AS, Elitist AS, or Max-Min AS).</span
+      >
+    </span>
     <select name="aco-mode" id="aco-mode" bind:value={acoMode}>
       <option value="as" selected>Ant System</option>
       <option value="elitist">Elitist Ant System</option>
@@ -62,9 +68,14 @@
   </label>
 
   {#if showElitistWeight}
-    <label class="tooltip">
-      <span class="tooltiptext">Extra pheromone for best path (EAS only).</span>
-      Elitist Weight
+    <label>
+      <span class="tooltip">
+        Elitist Weight
+        <span class="tooltiptext"
+          >Extra pheromone for best path (Elitist AS only).</span
+        >
+      </span>
+
       <select
         name="elitist-weight"
         id="elitist-weight"
@@ -80,9 +91,12 @@
     </label>
   {/if}
 
-  <label class="tooltip">
-    <span class="tooltiptext">Number of ants in the colony.</span>
-    Colony Size
+  <label>
+    <span class="tooltip">
+      Colony Size
+      <span class="tooltiptext">Number of ants in the colony (10-200).</span>
+    </span>
+
     <select name="colony-size" id="colony-size" bind:value={colonySize}>
       <option value="10">10</option>
       <option value="20">20</option>
@@ -93,9 +107,12 @@
     </select>
   </label>
 
-  <label class="tooltip">
-    <span class="tooltiptext">Total algorithm iterations.</span>
-    Iterations number
+  <label>
+    <span class="tooltip">
+      Iterations number
+      <span class="tooltiptext">Total algorithm iterations (50-500).</span>
+    </span>
+
     <select
       name="nbr-iterations"
       id="nbr-iterations"
@@ -109,9 +126,12 @@
     </select>
   </label>
 
-  <label class="tooltip">
-    <span class="tooltiptext">Controls pheromone influence (1-15).</span>
-    Alpha
+  <label>
+    <span class="tooltip">
+      Alpha
+      <span class="tooltiptext">Controls pheromone influence (1-15).</span>
+    </span>
+
     <select name="alpha" id="alpha" bind:value={alpha}>
       <option value="1">1</option>
       <option value="2">2</option>
@@ -123,9 +143,13 @@
     </select>
   </label>
 
-  <label class="tooltip">
-    <span class="tooltiptext">Controls distance influence (1-15).</span>
-    Beta
+  <label>
+    <span class="tooltip"
+      >Beta
+
+      <span class="tooltiptext">Controls distance influence (1-15).</span>
+    </span>
+
     <select name="beta" id="beta" bind:value={beta}>
       <option value="1" selected>1</option>
       <option value="2">2</option>
@@ -137,9 +161,12 @@
     </select>
   </label>
 
-  <label class="tooltip">
-    <span class="tooltiptext">Pheromone evaporation rate.</span>
-    Rho
+  <label>
+    <span class="tooltip"
+      >Rho
+      <span class="tooltiptext">Pheromone evaporation rate (0-0.75).</span>
+    </span>
+
     <select name="rho" id="rho" bind:value={rho}>
       <option value="0">0</option>
       <option value="0.001">0.001</option>
@@ -153,11 +180,14 @@
   </label>
 
   {#if showInitialPheromone}
-    <label class="tooltip">
-      <span class="tooltiptext"
-        >Starting pheromone amount on edges (not for MMAS).</span
-      >
-      Initial Pheromone
+    <label>
+      <span class="tooltip"
+        >Initial Pheromone
+        <span class="tooltiptext"
+          >Starting pheromone amount on edges (not for Max-Min AS).</span
+        >
+      </span>
+
       <select
         name="initial-pheromone"
         id="initial-pheromone"
@@ -174,13 +204,15 @@
     </label>
   {/if}
 
-  <label class="tooltip">
-    <span class="tooltiptext">Select the speed of the animation.</span>
-    Speed
+  <label>
+    <span class="tooltip"
+      >Speed
+      <span class="tooltiptext">Select the speed of the animation.</span>
+    </span>
     <select name="speed" id="speed" bind:value={speed}>
       <option value="500">Slow</option>
       <option value="150" selected>Normal</option>
-      <option value="50">fast</option>
+      <option value="50">Fast</option>
     </select>
   </label>
 
@@ -224,7 +256,6 @@
   }
   .btn {
     border: 2px solid #04aa6d;
-    background-color: white;
     border-radius: 0.5rem;
     cursor: pointer;
     transition-duration: 0.4s;
@@ -259,18 +290,19 @@
     border-radius: 6px;
     position: absolute;
     z-index: 1;
-    top: 125%; /* Position the tooltip below the text */
+    top: 125%; /* Position below the "Speed" text */
     left: 50%;
-    margin-left: -90px; /* Center the tooltip */
+    transform: translateX(-20%);
     opacity: 0;
     transition: opacity 0.3s;
     box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
+    white-space: wrap;
   }
 
   .tooltip .tooltiptext::after {
     content: "";
     position: absolute;
-    bottom: 100%; /* Arrow at the top of the tooltip */
+    top: -5px; /* Arrow pointing up */
     left: 50%;
     margin-left: -5px;
     border-width: 5px;

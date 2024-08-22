@@ -49,7 +49,7 @@
 
 <style>
   #canvas {
-    background-color: #1a1818;
+    background-color: #fff8e7;
     min-width: 650px;
     min-height: 530px;
   }

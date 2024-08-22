@@ -32,9 +32,9 @@
           backgroundColor(context: ScriptableContext<"matrix">) {
             const value = context.raw as HeatMapDataPoint
             const alpha = value.antCount
-            return `rgba(3, 4, 94, ${alpha})`
+            return `rgba(0, 0, 0, ${alpha})`
           },
-          borderColor: "rgba(3, 4, 94, 0.2)",
+          borderColor: "rgba(0, 0, 0, 0.2)",
           borderWidth: 1,
           width: ({ chart }: { chart: Chart }) =>
             (chart.chartArea || {}).width / chartLabels.length - 1,

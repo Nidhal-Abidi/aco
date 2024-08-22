@@ -3,11 +3,13 @@ import { deepCopyOfCitiesArray } from "../../../helpers/citiesDeepCopy"
 
 function drawCircle(x: number, y: number, ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "white"
+  ctx.strokeStyle = "#a67b5b" // Set the border color
   //ctx.strokeStyle = "red"
-  //ctx.lineWidth = 5
+  ctx.lineWidth = 1
   ctx.beginPath()
   ctx.arc(x, y, 18, 0, Math.PI * 2)
   ctx.fill()
+  ctx.stroke()
 }
 
 function drawText(
@@ -113,7 +115,7 @@ function showCityEdges(
           remainingCities[i].y,
           5,
           ctx,
-          "lightgreen"
+          "#a67b5b"
         )
       }
     }
