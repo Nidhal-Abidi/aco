@@ -1,93 +1,72 @@
 <script lang="ts">
-  import { beforeUpdate, onMount } from "svelte"
+  import { afterUpdate, beforeUpdate, onMount } from "svelte"
   import { animate } from "./helpers/animation"
   import { displayCities } from "./helpers/canvasDrawing"
   import { convertPathToEdges } from "./helpers/bestAntPaths"
+  import type { City } from "../../algorithms/acoAlgorithms"
 
-  export let cities
-  export let ACOIter
+  export let cities: City[]
+  export let ACOIter: City[][]
   export let globalBestPathPerIteration: string[][]
-  export let speed
+  export let speed: string
 
   let canvas: HTMLCanvasElement
   let ctx: CanvasRenderingContext2D
-  let globalBestPathPerIterationConverted = []
+  let globalBestPathPerIterationConverted: string[][] = []
 
-  const originalWidth = 650
-  const originalHeight = 530
+  const ORIGINAL_WIDTH = 650
+  const ORIGINAL_HEIGHT = 530
+  let scale = 1
 
-  // Calculate scaling and translation to center content
-  function calculateTransform(canvas) {
-    const scaleX = canvas.width / originalWidth
-    const scaleY = canvas.height / originalHeight
-    const scale = Math.min(scaleX, scaleY)
+  function resizeCanvas() {
+    let containerDiv = canvas.parentElement
+    if (containerDiv && canvas) {
+      console.log("RESCALING!!!")
+      const rect = containerDiv.getBoundingClientRect()
+      canvas.width = rect.width
+      canvas.height = rect.height
+      scale = Math.min(
+        canvas.width / ORIGINAL_WIDTH,
+        canvas.height / ORIGINAL_HEIGHT
+      )
 
-    const offsetX = (canvas.width - originalWidth * scale) / 2
-    const offsetY = (canvas.height - originalHeight * scale) / 2
-
-    return { scale, offsetX, offsetY }
+      if (ctx) {
+        ctx.setTransform(scale, 0, 0, scale, 0, 0)
+        redraw()
+      }
+    }
   }
 
-  beforeUpdate(() => {
-    globalBestPathPerIterationConverted =
-      globalBestPathPerIteration.map(convertPathToEdges)
-
-    //const { scale, offsetX, offsetY } = calculateTransform(canvas)
-
-    /* ctx.save()
-    ctx.clearRect(0, 0, canvas.width, canvas.height)
-    ctx.translate(offsetX, offsetY)
-    ctx.scale(scale, scale)
- */
+  function redraw() {
     if (globalBestPathPerIterationConverted.length > 0) {
       animate(
         ACOIter,
         globalBestPathPerIterationConverted,
         0,
-        canvas.width,
-        canvas.height,
+        ORIGINAL_WIDTH,
+        ORIGINAL_HEIGHT,
         ctx,
         parseInt(speed)
       )
     } else {
-      if (ctx != undefined) {
-        displayCities(cities, [], canvas.width, canvas.height, ctx)
-      }
+      displayCities(cities, [], ORIGINAL_WIDTH, ORIGINAL_HEIGHT, ctx)
     }
+  }
+
+  beforeUpdate(() => {
+    globalBestPathPerIterationConverted =
+      globalBestPathPerIteration.map(convertPathToEdges)
   })
 
   onMount(() => {
     ctx = canvas.getContext("2d")!
-    // You can set the width & height to whatever value you want later.
-    /* canvas.width = 650
-    canvas.height = 530 */
-
-    const resizeCanvas = () => {
-      const parent = canvas.parentElement
-      const devicePixelRatio = window.devicePixelRatio || 1
-
-      const width = parent!.clientWidth
-      const height = parent!.clientHeight
-
-      canvas.width = width * devicePixelRatio
-      canvas.height = height * devicePixelRatio
-
-      // Set CSS width and height to match the container size
-      canvas.style.width = `${width}px`
-      canvas.style.height = `${height}px`
-
-      // Scale the drawing context to match the pixel ratio
-      const ctx = canvas.getContext("2d")
-      ctx!.scale(devicePixelRatio, devicePixelRatio)
-
-      // Display all the cities before any animation
-      displayCities(cities, [], canvas.width, canvas.height, ctx)
-    }
-
-    resizeCanvas() // Initial resize
-    window.addEventListener("resize", resizeCanvas) // Resize on window resize
-
+    resizeCanvas()
+    window.addEventListener("resize", resizeCanvas)
     return () => window.removeEventListener("resize", resizeCanvas)
+  })
+
+  afterUpdate(() => {
+    redraw()
   })
 </script>
 
