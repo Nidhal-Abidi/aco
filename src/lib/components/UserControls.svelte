@@ -247,6 +247,7 @@
   }
   select,
   button {
+    background-color: #fff8e7;
     font-size: 1rem;
     border: 1px solid dimgray;
     line-height: 1.5;
@@ -255,23 +256,23 @@
     cursor: pointer;
   }
   .btn {
-    border: 2px solid #04aa6d;
+    border: 2px solid #008cba;
     border-radius: 0.5rem;
     cursor: pointer;
     transition-duration: 0.4s;
   }
 
   .btn:hover {
-    background-color: #04aa6d;
+    background-color: #008cba;
     color: white;
   }
 
   .btn-reset {
-    border-color: #008cba;
+    border-color: #808080;
   }
 
   .btn-reset:hover {
-    background-color: #008cba;
+    background-color: #808080;
     color: white;
   }
   .tooltip {

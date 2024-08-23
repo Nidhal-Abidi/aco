@@ -14,6 +14,7 @@
   import PheromoneHeatMap from "./lib/components/HeatMap/PheromoneHeatMap.svelte"
   import CalculationOverlay from "./lib/components/CalculationOverlay/CalculationOverlay.svelte"
   import Worker from "./aco-worker?worker"
+  import { onMount } from "svelte"
 
   let userControls = {
     nbrOfCities: "10",
@@ -122,6 +123,9 @@
       }
     })
   }
+  onMount(() => {
+    console.log("Nidhal Labidi | Computer Science Masters student")
+  })
 </script>
 
 <CalculationOverlay isVisible={isCalculating} {progress} />
@@ -171,24 +175,56 @@
 </footer>
 
 <style>
+  header,
+  main,
+  footer {
+    background-color: #fff8e7;
+  }
   main {
     display: flex;
-    align-items: center;
+    align-items: stretch;
+    flex-wrap: wrap;
   }
   .cities-container {
-    align-self: flex-start;
+    flex: 0 1 60%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 300px;
+  }
+  .heat-map-container {
+    flex: 0 1 40%; /* 40% width on larger screens */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 200px;
+    min-height: 300px;
+    height: calc(100vh - 200px);
   }
   footer {
-    height: 20%;
     display: flex;
     flex-direction: column;
   }
   .chart-container {
-    flex-grow: 2;
+    width: 100%; /* Each chart takes 100% width */
+    display: flex;
+    justify-content: center;
+    align-items: center;
   }
-  .heat-map-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
+
+  @media (max-width: 768px) {
+    main {
+      flex-direction: column;
+    }
+
+    .cities-container,
+    .heat-map-container {
+      flex: 1 1 100%; /* Take full width on small screens */
+    }
+
+    .heat-map-container {
+      min-height: 300px; /* Ensure enough height */
+      height: calc(50vh - 100px); /* Adjust height on smaller screens */
+    }
   }
 </style>
