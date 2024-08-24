@@ -1,19 +1,13 @@
 import type { City } from "../../../algorithms/acoAlgorithms"
 import { deepCopyOfCitiesArray } from "../../../helpers/citiesDeepCopy"
 
-function drawCircle(
-  x: number,
-  y: number,
-  ctx: CanvasRenderingContext2D,
-  scaleX: number,
-  scaleY: number
-) {
+function drawCircle(x: number, y: number, ctx: CanvasRenderingContext2D) {
   ctx.fillStyle = "white"
   ctx.strokeStyle = "#a67b5b" // Set the border color
   //ctx.strokeStyle = "red"
   ctx.lineWidth = 1
   ctx.beginPath()
-  ctx.arc(x * scaleX, y * scaleY, 18 * Math.min(scaleX, scaleY), 0, Math.PI * 2)
+  ctx.arc(x, y, 18, 0, Math.PI * 2)
   ctx.fill()
   ctx.stroke()
 }
@@ -22,14 +16,12 @@ function drawText(
   x: number,
   y: number,
   text: string,
-  ctx: CanvasRenderingContext2D,
-  scaleX: number,
-  scaleY: number
+  ctx: CanvasRenderingContext2D
 ) {
-  ctx.font = `bold ${10 * Math.min(scaleX, scaleY)}pt Courier`
+  ctx.font = "bold 10pt Courier"
   ctx.fillStyle = "black"
   ctx.textAlign = "center"
-  ctx.fillText(text, x * scaleX, y * scaleY + 3 * Math.min(scaleX, scaleY))
+  ctx.fillText(text, x, y + 3)
 }
 
 function drawEdge(
@@ -39,16 +31,14 @@ function drawEdge(
   y_b: number,
   lineWidth: number,
   ctx: CanvasRenderingContext2D,
-  scaleX: number,
-  scaleY: number,
   color = "#696969"
 ) {
   let prevLineWidth = ctx.lineWidth
   ctx.strokeStyle = color
-  ctx.lineWidth = lineWidth * Math.min(scaleX, scaleY)
+  ctx.lineWidth = lineWidth
   ctx.beginPath()
-  ctx.moveTo(x_a * scaleX, y_a * scaleY)
-  ctx.lineTo(x_b * scaleX, y_b * scaleY)
+  ctx.moveTo(x_a, y_a)
+  ctx.lineTo(x_b, y_b)
   ctx.stroke()
   ctx.lineWidth = prevLineWidth
 }
@@ -57,13 +47,11 @@ function drawCity(
   x: number,
   y: number,
   name: string,
-  ctx: CanvasRenderingContext2D,
-  scaleX: number,
-  scaleY: number
+  ctx: CanvasRenderingContext2D
 ) {
   //represents a city inside the canvas
-  drawCircle(x, y, ctx, scaleX, scaleY)
-  drawText(x, y, name, ctx, scaleX, scaleY)
+  drawCircle(x, y, ctx)
+  drawText(x, y, name, ctx)
 }
 
 function clearCanvas(
@@ -78,9 +66,7 @@ function clearCanvas(
 function showCityEdges(
   cities: City[],
   globalBestPathEdges: string[],
-  ctx: CanvasRenderingContext2D,
-  scaleX: number,
-  scaleY: number
+  ctx: CanvasRenderingContext2D
 ) {
   // 1) Draw the ordinay edges (They're seperated so that bestpath would always be drawn on top of the oridnary edges)
   let remainingCities = deepCopyOfCitiesArray(cities)
@@ -102,9 +88,7 @@ function showCityEdges(
           remainingCities[i].x,
           remainingCities[i].y,
           currentCity.lineWidthTo[neighborName],
-          ctx,
-          scaleX,
-          scaleY
+          ctx
         )
       }
     }
@@ -131,8 +115,6 @@ function showCityEdges(
           remainingCities[i].y,
           5,
           ctx,
-          scaleX,
-          scaleY,
           "#a67b5b"
         )
       }
@@ -155,8 +137,8 @@ export function displayCities(
   const scaleX = canvasWidth / 650
   const scaleY = canvasHeight / 530
   clearCanvas(canvasWidth, canvasHeight, ctx)
-  showCityEdges(cities, globalBestPathEdges, ctx, scaleX, scaleY)
+  showCityEdges(cities, globalBestPathEdges, ctx)
   cities.forEach((city) => {
-    drawCity(city.x, city.y, city.name, ctx, scaleX, scaleY)
+    drawCity(city.x, city.y, city.name, ctx)
   })
 }
