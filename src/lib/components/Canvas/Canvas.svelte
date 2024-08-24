@@ -73,11 +73,9 @@
 <canvas id="canvas" bind:this={canvas}></canvas>
 
 <style>
-  #canvas {
-    background-color: #fff8e7;
+  canvas {
     width: 100%;
     height: 100%;
-    min-width: 300px;
-    min-height: 300px;
+    display: block;
   }
 </style>

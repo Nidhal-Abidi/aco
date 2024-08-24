@@ -130,101 +130,132 @@
 
 <CalculationOverlay isVisible={isCalculating} {progress} />
 
-<header>
-  <UserControls
-    on:startAnimation={async (e) => await updateUserControls(e)}
-    on:resetAnimation={resetVisualization}
-  />
-</header>
+<article class="aco-visualization">
+  <header>
+    <UserControls
+      on:startAnimation={async (e) => await updateUserControls(e)}
+      on:resetAnimation={resetVisualization}
+    />
+  </header>
 
-<main>
-  <div class="cities-container">
-    <Canvas
-      {cities}
-      ACOIter={ACOIterations}
-      {globalBestPathPerIteration}
-      speed={userControls.speed}
-    />
-  </div>
-  <div class="heat-map-container">
-    <PheromoneHeatMap
-      {cities}
-      speed={userControls.speed}
-      {ACOIterations}
-      colonySize={userControls.colonySize}
-    />
-  </div>
-</main>
+  <main>
+    <div class="cities-container">
+      <Canvas
+        {cities}
+        ACOIter={ACOIterations}
+        {globalBestPathPerIteration}
+        speed={userControls.speed}
+      />
+    </div>
+    <div class="heat-map-container">
+      <PheromoneHeatMap
+        {cities}
+        speed={userControls.speed}
+        {ACOIterations}
+        colonySize={userControls.colonySize}
+      />
+    </div>
+  </main>
 
-<footer>
-  <div class="chart-container">
-    <GlobalBestPath
-      {globalBestPathPerIteration}
-      {cities}
-      speed={userControls.speed}
-      sound={userControls.sound}
-    />
-  </div>
-  <div class="chart-container">
-    <LocalBestPath
-      {cities}
-      {localBestPathPerIteration}
-      speed={userControls.speed}
-    />
-  </div>
-</footer>
+  <footer>
+    <div class="chart-container">
+      <GlobalBestPath
+        {globalBestPathPerIteration}
+        {cities}
+        speed={userControls.speed}
+        sound={userControls.sound}
+      />
+    </div>
+    <div class="chart-container">
+      <LocalBestPath
+        {cities}
+        {localBestPathPerIteration}
+        speed={userControls.speed}
+      />
+    </div>
+  </footer>
+</article>
 
 <style>
-  header,
-  main,
-  footer {
-    background-color: #fff8e7;
-  }
-  main {
-    display: flex;
-    align-items: stretch;
-    flex-wrap: wrap;
-  }
-  .cities-container {
-    flex: 0 1 60%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 300px;
-  }
-  .heat-map-container {
-    flex: 0 1 40%; /* 40% width on larger screens */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 200px;
-    min-height: 300px;
-    height: calc(100vh - 200px);
-  }
-  footer {
+  .aco-visualization {
     display: flex;
     flex-direction: column;
-  }
-  .chart-container {
-    width: 100%; /* Each chart takes 100% width */
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    min-height: 100vh;
+    background-color: #fff8e7;
   }
 
-  @media (max-width: 768px) {
+  header {
+    flex: 0 0 auto;
+  }
+
+  main {
+    flex: 1 0 auto;
+    display: flex;
+    min-height: 40vh;
+  }
+
+  .cities-container {
+    flex: 6;
+    min-width: 300px;
+  }
+
+  .heat-map-container {
+    flex: 4;
+    min-width: 200px;
+  }
+
+  footer {
+    flex: 0 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+  }
+
+  .chart-container {
+    flex: 1 1 100%;
+    min-height: 200px;
+    padding: 10px;
+  }
+
+  @media (min-width: 1025px) {
+    .aco-visualization {
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    main {
+      min-height: 0;
+    }
+
+    .chart-container {
+      flex: 1 1 50%;
+      min-height: 200px;
+    }
+  }
+
+  @media (max-width: 1024px) {
     main {
       flex-direction: column;
     }
 
     .cities-container,
     .heat-map-container {
-      flex: 1 1 100%; /* Take full width on small screens */
+      flex: 1;
+      min-height: 300px;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .aco-visualization {
+      height: auto;
     }
 
+    main {
+      flex-direction: column;
+    }
+
+    .cities-container,
     .heat-map-container {
-      min-height: 300px; /* Ensure enough height */
-      height: calc(50vh - 100px); /* Adjust height on smaller screens */
+      min-height: 50vh;
     }
   }
 </style>

@@ -61,3 +61,12 @@
 </script>
 
 <canvas bind:this={chartCanvas}></canvas>
+
+<style>
+  canvas {
+    width: 100%;
+    height: 100%;
+    max-height: 250px;
+    display: block;
+  }
+</style>
