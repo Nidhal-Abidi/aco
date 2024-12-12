@@ -174,9 +174,26 @@
       />
     </div>
   </footer>
+  <div class="footer-thesis-title">
+    Ant Colony Optimization 🐜 - <span class="author">[Nidhal Labidi 🎓]</span>
+</div>
 </article>
 
 <style>
+.footer-thesis-title {
+    font-size: 0.9rem;
+    color: #666666;
+    text-align: center;
+    line-height: 1.4;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    font-style: italic;
+}
+
+.footer-thesis-title .author {
+    font-size: 0.9rem;
+    color: #555; 
+}
   .aco-visualization {
     display: flex;
     flex-direction: column;
