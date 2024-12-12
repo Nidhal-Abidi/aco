@@ -27,7 +27,7 @@
     const data = {
       datasets: [
         {
-          label: "Ant Flow Rate per Edge",
+          label: "Percentage of Ants that walked on an Edge",
           data: chartValues,
           backgroundColor(context: ScriptableContext<"matrix">) {
             const value = context.raw as HeatMapDataPoint
