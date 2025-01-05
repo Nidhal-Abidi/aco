@@ -176,7 +176,7 @@
   </footer>
   <div class="footer-thesis-title">
     Ant Colony Optimization 🐜 - <span class="author">[Nidhal Labidi 🎓]</span>
-</div>
+  </div>
 </article>
 
 <style>
@@ -235,7 +235,7 @@
 
   @media (min-width: 1025px) {
     .aco-visualization {
-      height: 100vh;
+      min-height: 100vh;
       overflow: hidden;
     }
 
@@ -263,7 +263,7 @@
 
   @media (max-width: 768px) {
     .aco-visualization {
-      height: auto;
+      min-height: auto;
     }
 
     main {
