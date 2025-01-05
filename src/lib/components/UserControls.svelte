@@ -133,6 +133,7 @@
     </span>
 
     <select name="alpha" id="alpha" bind:value={alpha}>
+      <option value="0">0</option>
       <option value="1">1</option>
       <option value="2">2</option>
       <option value="3" selected>3</option>
@@ -151,6 +152,7 @@
     </span>
 
     <select name="beta" id="beta" bind:value={beta}>
+      <option value="0">0</option>
       <option value="1" selected>1</option>
       <option value="2">2</option>
       <option value="3">3</option>
