@@ -1,10 +1,11 @@
 <script lang="ts">
     export let timeSpent = 0;
+    $: formattedTime = timeSpent.toFixed(2)
 </script>
 
 <div class="time-display-wrapper">
     <div class="time-display">
-        <span class="time">Execution Time: {timeSpent}</span>
+        <span class="time">Execution Time: {formattedTime}</span>
         <span class="unit">ms</span>
     </div>
 </div>
