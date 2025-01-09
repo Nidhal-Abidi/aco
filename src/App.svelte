@@ -15,6 +15,7 @@
   import CalculationOverlay from "./lib/components/CalculationOverlay/CalculationOverlay.svelte"
   import Worker from "./aco-worker?worker"
   import { onMount } from "svelte"
+  import ExecutionTime from "./lib/components/ExecutionTime.svelte";
 
   let userControls = {
     nbrOfCities: "10",
@@ -36,6 +37,7 @@
   let antsChosenPaths: string[][][] = []
   let globalBestPathPerIteration: string[][] = []
   let localBestPathPerIteration: string[][] = []
+  let timeSpent = 0
   let cities: City[] = deepCopyOfCitiesArray(cities10)
 
   async function updateUserControls(e: CustomEvent) {
@@ -62,6 +64,7 @@
     resetVisualization(e)
     // Start the web worker containing the ACO algo
     let {
+      Worker_timeSpent,
       Worker_ACOIterations,
       Worker_antsChosenPaths,
       Worker_updatedCities,
@@ -74,6 +77,7 @@
     cities = Worker_updatedCities
     localBestPathPerIteration = Worker_localBestPathPerIteration
     globalBestPathPerIteration = Worker_globalBestPathPerIteration
+    timeSpent = Worker_timeSpent
     isCalculating = false
   }
 
@@ -95,6 +99,7 @@
       nbrOfIterations: number
     }
   ): Promise<{
+    Worker_timeSpent:number
     Worker_ACOIterations: City[][]
     Worker_antsChosenPaths: string[][][]
     Worker_updatedCities: City[]
@@ -103,6 +108,7 @@
   }> {
     return new Promise((resolve) => {
       const worker = new Worker()
+      const startTime = performance.now()
 
       worker.postMessage({ cities, userControls })
 
@@ -110,7 +116,10 @@
         if (event.data.type === "progress") {
           progress = event.data.value
         } else if (event.data.type === "result") {
+          const endTime = performance.now()
+          const timeSpent = endTime - startTime
           resolve({
+            Worker_timeSpent: timeSpent,
             Worker_ACOIterations: event.data.ACOIterations,
             Worker_antsChosenPaths: event.data.antsChosenPaths,
             Worker_updatedCities: event.data.updatedCities,
@@ -137,7 +146,7 @@
       on:resetAnimation={resetVisualization}
     />
   </header>
-
+  <ExecutionTime {timeSpent}/>
   <main>
     <div class="cities-container">
       <Canvas
