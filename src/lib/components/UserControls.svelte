@@ -47,8 +47,8 @@
     </span>
     <select name="nbr-of-cities" id="nbr-of-cities" bind:value={nbrOfCities}>
       <option value="5">Small Town</option>
-      <option value="7">Medium Town</option>
-      <option value="10" selected>Large Town</option>
+      <option value="7" selected>Medium Town</option>
+      <option value="10">Large Town</option>
       <option value="15">Metropolis</option>
     </select>
   </label>
@@ -81,12 +81,15 @@
         id="elitist-weight"
         bind:value={elitistWeight}
       >
-        <option value="0.1" selected>0.1</option>
+        <option value="0.1">0.1</option>
         <option value="0.5">0.5</option>
         <option value="1">1</option>
-        <option value="2" selected>2</option>
+        <option value="2">2</option>
         <option value="5">5</option>
         <option value="10">10</option>
+        <option value="20">20</option>
+        <option value="50" selected>50</option>
+        <option value="100">100</option>
       </select>
     </label>
   {/if}
@@ -100,8 +103,8 @@
     <select name="colony-size" id="colony-size" bind:value={colonySize}>
       <option value="10">10</option>
       <option value="20">20</option>
-      <option value="30" selected>30</option>
-      <option value="50">50</option>
+      <option value="30">30</option>
+      <option value="50" selected>50</option>
       <option value="100">100</option>
       <option value="200">200</option>
     </select>
@@ -134,9 +137,9 @@
 
     <select name="alpha" id="alpha" bind:value={alpha}>
       <option value="0">0</option>
-      <option value="1">1</option>
+      <option value="1" selected>1</option>
       <option value="2">2</option>
-      <option value="3" selected>3</option>
+      <option value="3">3</option>
       <option value="4">4</option>
       <option value="5">5</option>
       <option value="10">10</option>
@@ -153,11 +156,11 @@
 
     <select name="beta" id="beta" bind:value={beta}>
       <option value="0">0</option>
-      <option value="1" selected>1</option>
+      <option value="1">1</option>
       <option value="2">2</option>
       <option value="3">3</option>
       <option value="4">4</option>
-      <option value="5">5</option>
+      <option value="5" selected>5</option>
       <option value="10">10</option>
       <option value="15">15</option>
     </select>
@@ -174,9 +177,9 @@
       <option value="0.001">0.001</option>
       <option value="0.01">0.01</option>
       <option value="0.05">0.05</option>
-      <option value="0.1" selected>0.1</option>
+      <option value="0.1">0.1</option>
       <option value="0.2">0.2</option>
-      <option value="0.5">0.5</option>
+      <option value="0.5" selected>0.5</option>
       <option value="0.75">0.75</option>
     </select>
   </label>
@@ -195,10 +198,10 @@
         id="initial-pheromone"
         bind:value={initialPheromone}
       >
-        <option value="0.1">0.1</option>
+        <option value="0.1" selected>0.1</option>
         <option value="0.5">0.5</option>
         <option value="0">0</option>
-        <option value="1" selected>1</option>
+        <option value="1">1</option>
         <option value="2">2</option>
         <option value="5">5</option>
         <option value="10">10</option>
@@ -215,8 +218,8 @@
     </span>
     <select name="speed" id="speed" bind:value={speed}>
       <option value="500">Slow</option>
-      <option value="150" selected>Normal</option>
-      <option value="50">Fast</option>
+      <option value="150">Normal</option>
+      <option value="50" selected>Fast</option>
     </select>
   </label>
 
