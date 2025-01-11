@@ -195,6 +195,8 @@
         id="initial-pheromone"
         bind:value={initialPheromone}
       >
+        <option value="0.1">0.1</option>
+        <option value="0.5">0.5</option>
         <option value="0">0</option>
         <option value="1" selected>1</option>
         <option value="2">2</option>
