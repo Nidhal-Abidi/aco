@@ -2,6 +2,8 @@
   import { Chart } from "chart.js/auto"
   import { beforeUpdate, onMount } from "svelte"
   import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
+  import { applyChartTheme, lineChartOptions } from "../../chartTheme"
+  import { theme } from "../../theme"
 
   export let localBestPathPerIteration
   export let cities
@@ -12,19 +14,17 @@
   let ctx: CanvasRenderingContext2D
 
   function createNewChart() {
+    applyChartTheme()
     chart = new Chart(ctx, {
       type: "line",
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-      },
+      options: lineChartOptions(),
       data: {
         labels: [],
         datasets: [
           {
             label: "Local Shortest Distance (Per iteration)",
-            backgroundColor: "rgb(0, 119, 190)",
-            borderColor: "rgb(0, 119, 190)",
+            backgroundColor: theme.accent,
+            borderColor: theme.accent,
             data: [],
             cubicInterpolationMode: "monotone",
           },
@@ -64,7 +64,6 @@
   canvas {
     width: 100%;
     height: 100%;
-    max-height: 250px;
     display: block;
   }
 </style>

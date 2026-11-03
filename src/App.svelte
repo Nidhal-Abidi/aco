@@ -140,84 +140,164 @@
 <CalculationOverlay isVisible={isCalculating} {progress} />
 
 <article class="aco-visualization">
-  <header>
+  <header class="page-header">
+    <div class="title-block">
+      <p class="kicker">Traveling salesman problem</p>
+      <h1>Ant Colony Optimization</h1>
+    </div>
+    <p class="author">Nidhal Labidi</p>
+  </header>
+
+  <section class="controls-panel">
     <UserControls
       on:startAnimation={async (e) => await updateUserControls(e)}
       on:resetAnimation={resetVisualization}
     />
-  </header>
-  <ExecutionTime {timeSpent}/>
+    <div class="stat-slot">
+      <ExecutionTime {timeSpent} />
+    </div>
+  </section>
+
   <main>
-    <div class="cities-container">
-      <Canvas
-        {cities}
-        ACOIter={ACOIterations}
-        {globalBestPathPerIteration}
-        speed={userControls.speed}
-      />
-    </div>
-    <div class="heat-map-container">
-      <PheromoneHeatMap
-        {cities}
-        speed={userControls.speed}
-        {ACOIterations}
-        colonySize={userControls.colonySize}
-      />
-    </div>
+    <section class="panel cities-container">
+      <h2>Travel map</h2>
+      <div class="panel-body">
+        <Canvas
+          {cities}
+          ACOIter={ACOIterations}
+          {globalBestPathPerIteration}
+          speed={userControls.speed}
+        />
+      </div>
+    </section>
+    <section class="panel heat-map-container">
+      <h2>Pheromone heat map</h2>
+      <div class="panel-body">
+        <PheromoneHeatMap
+          {cities}
+          speed={userControls.speed}
+          {ACOIterations}
+          colonySize={userControls.colonySize}
+        />
+      </div>
+    </section>
   </main>
 
   <footer>
-    <div class="chart-container">
-      <GlobalBestPath
-        {globalBestPathPerIteration}
-        {cities}
-        speed={userControls.speed}
-        sound={userControls.sound}
-      />
-    </div>
-    <div class="chart-container">
-      <LocalBestPath
-        {cities}
-        {localBestPathPerIteration}
-        speed={userControls.speed}
-      />
-    </div>
+    <section class="panel chart-container">
+      <h2>Global best path</h2>
+      <div class="panel-body chart-body">
+        <GlobalBestPath
+          {globalBestPathPerIteration}
+          {cities}
+          speed={userControls.speed}
+          sound={userControls.sound}
+        />
+      </div>
+    </section>
+    <section class="panel chart-container">
+      <h2>Local best path</h2>
+      <div class="panel-body chart-body">
+        <LocalBestPath
+          {cities}
+          {localBestPathPerIteration}
+          speed={userControls.speed}
+        />
+      </div>
+    </section>
   </footer>
-  <div class="footer-thesis-title">
-    Ant Colony Optimization 🐜 - <span class="author">[Nidhal Labidi 🎓]</span>
-  </div>
 </article>
 
 <style>
-.footer-thesis-title {
-    font-size: 0.9rem;
-    color: #666666;
-    text-align: center;
-    line-height: 1.4;
-    margin-top: 10px;
-    margin-bottom: 10px;
-    font-style: italic;
-}
-
-.footer-thesis-title .author {
-    font-size: 0.9rem;
-    color: #555; 
-}
   .aco-visualization {
     display: flex;
     flex-direction: column;
+    gap: 0.75rem;
     min-height: 100vh;
-    background-color: #fff8e7;
+    padding: 1rem 1.25rem 1.25rem;
+    background: var(--bg);
+    color: var(--text);
   }
 
-  header {
-    flex: 0 0 auto;
+  .page-header {
+    display: flex;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .kicker {
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+
+  h1 {
+    font-size: 1.5rem;
+    font-weight: 650;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+  }
+
+  .author {
+    font-size: 0.9rem;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  .controls-panel {
+    display: flex;
+    align-items: stretch;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  .controls-panel :global(form) {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .stat-slot {
+    display: flex;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    border-left: 1px solid var(--border);
   }
 
   main {
-    flex: 1 0 auto;
+    flex: 1 1 auto;
     display: flex;
+    gap: 0.75rem;
     min-height: 40vh;
+  }
+
+  .panel {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+
+  h2 {
+    padding: 0.7rem 0.9rem 0;
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .panel-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
   }
 
   .cities-container {
@@ -234,27 +314,42 @@
     flex: 0 0 auto;
     display: flex;
     flex-wrap: wrap;
+    gap: 0.75rem;
   }
 
   .chart-container {
     flex: 1 1 100%;
-    min-height: 200px;
-    padding: 10px;
+    min-height: 220px;
+  }
+
+  .chart-body {
+    flex: none;
+    height: 200px;
   }
 
   @media (min-width: 1025px) {
     .aco-visualization {
-      min-height: 100vh;
+      height: 100vh;
       overflow: hidden;
     }
 
     main {
+      flex: 1 1 0;
+      min-height: 0;
+    }
+
+    .cities-container,
+    .heat-map-container {
       min-height: 0;
     }
 
     .chart-container {
-      flex: 1 1 50%;
-      min-height: 200px;
+      flex: 1 1 calc(50% - 0.375rem);
+      min-height: 0;
+    }
+
+    .chart-body {
+      height: 150px;
     }
   }
 
@@ -273,6 +368,24 @@
   @media (max-width: 768px) {
     .aco-visualization {
       min-height: auto;
+      height: auto;
+      overflow: visible;
+      padding: 0.75rem;
+    }
+
+    .page-header {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .controls-panel {
+      flex-direction: column;
+    }
+
+    .stat-slot {
+      border-left: none;
+      border-top: 1px solid var(--border);
     }
 
     main {
@@ -281,6 +394,7 @@
 
     .cities-container,
     .heat-map-container {
+      min-width: 0;
       min-height: 50vh;
     }
   }

@@ -1,10 +1,10 @@
 import type { City } from "../../../algorithms/acoAlgorithms"
 import { deepCopyOfCitiesArray } from "../../../helpers/citiesDeepCopy"
+import { theme } from "../../../theme"
 
 function drawCircle(x: number, y: number, ctx: CanvasRenderingContext2D) {
-  ctx.fillStyle = "white"
-  ctx.strokeStyle = "#a67b5b" // Set the border color
-  //ctx.strokeStyle = "red"
+  ctx.fillStyle = theme.surface
+  ctx.strokeStyle = theme.accent
   ctx.lineWidth = 1
   ctx.beginPath()
   ctx.arc(x, y, 18, 0, Math.PI * 2)
@@ -18,8 +18,8 @@ function drawText(
   text: string,
   ctx: CanvasRenderingContext2D
 ) {
-  ctx.font = "bold 10pt Courier"
-  ctx.fillStyle = "black"
+  ctx.font = `600 10pt ${theme.mono}`
+  ctx.fillStyle = theme.text
   ctx.textAlign = "center"
   ctx.fillText(text, x, y + 3)
 }
@@ -31,7 +31,7 @@ function drawEdge(
   y_b: number,
   lineWidth: number,
   ctx: CanvasRenderingContext2D,
-  color = "#696969"
+  color = theme.edge
 ) {
   let prevLineWidth = ctx.lineWidth
   ctx.strokeStyle = color
@@ -115,7 +115,7 @@ function showCityEdges(
           remainingCities[i].y,
           5,
           ctx,
-          "#a67b5b"
+          theme.amber
         )
       }
     }

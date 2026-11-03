@@ -42,7 +42,7 @@
 <form on:submit|preventDefault={onSubmit}>
   <label>
     <span class="tooltip">
-      Travel Map Selector
+      Travel map
       <span class="tooltiptext">Choose a map size (number of cities)</span>
     </span>
     <select name="nbr-of-cities" id="nbr-of-cities" bind:value={nbrOfCities}>
@@ -112,7 +112,7 @@
 
   <label>
     <span class="tooltip">
-      Iterations number
+      Iterations
       <span class="tooltiptext">Total algorithm iterations (50-500).</span>
     </span>
 
@@ -231,91 +231,112 @@
     </select>
   </label>
 
-  <button type="submit" id="start-animation" class="btn">Start Animation</button
-  >
-  <button
-    type="button"
-    id="reset-animation"
-    class="btn btn-reset"
-    on:click={resetAnimation}>Reset Animation</button
-  >
+  <div class="actions">
+    <button type="submit" id="start-animation" class="btn">Start Animation</button>
+    <button
+      type="button"
+      id="reset-animation"
+      class="btn btn-reset"
+      on:click={resetAnimation}>Reset Animation</button>
+  </div>
 </form>
 
 <style>
   form {
     display: flex;
-    justify-content: flex-start;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    gap: 0.75rem 1rem;
+    padding: 0.85rem 1rem;
+  }
+
+  label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    min-width: 8.5rem;
+    font-size: 0.75rem;
+    font-weight: 650;
+    letter-spacing: 0.02em;
+    color: var(--muted);
+  }
+
+  select {
+    background: var(--surface);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-weight: 500;
+    line-height: 1.4;
+    padding: 0.4rem 0.5rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
+  }
+
+  select:focus,
+  .btn:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+  }
+
+  .actions {
+    display: flex;
     flex-wrap: wrap;
     gap: 0.5rem;
-    padding: 0.5rem 0 0.5rem 0.5rem;
+    margin-left: auto;
   }
-  label {
-    font-size: 1rem;
-  }
-  select,
-  button {
-    background-color: #fff8e7;
-    font-size: 1rem;
-    border: 1px solid dimgray;
-    line-height: 1.5;
-    padding: 0.25rem;
-    border-radius: 0.2rem;
-    cursor: pointer;
-  }
+
   .btn {
-    border: 2px solid #008cba;
-    border-radius: 0.5rem;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 0.9rem;
+    background: var(--accent);
+    color: white;
+    font-size: 0.95rem;
+    font-weight: 650;
     cursor: pointer;
-    transition-duration: 0.4s;
   }
 
   .btn:hover {
-    background-color: #008cba;
-    color: white;
+    background: var(--accent-strong);
   }
 
   .btn-reset {
-    border-color: #808080;
+    background: transparent;
+    color: var(--text);
+    border: 1px solid var(--border);
   }
 
   .btn-reset:hover {
-    background-color: #808080;
-    color: white;
+    background: var(--bg);
+    color: var(--text);
   }
+
   .tooltip {
     position: relative;
     display: inline-block;
-    cursor: pointer;
+    width: fit-content;
+    cursor: help;
   }
 
   .tooltip .tooltiptext {
     visibility: hidden;
-    width: 180px;
-    background-color: #333;
-    color: #fff;
-    text-align: center;
-    padding: 5px 10px;
-    border-radius: 6px;
+    width: 200px;
+    background: var(--text);
+    color: white;
+    text-align: left;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    padding: 0.4rem 0.55rem;
+    border-radius: 8px;
     position: absolute;
-    z-index: 1;
-    top: 125%; /* Position below the "Speed" text */
-    left: 50%;
-    transform: translateX(-20%);
+    z-index: 2;
+    top: calc(100% + 6px);
+    left: 0;
     opacity: 0;
-    transition: opacity 0.3s;
-    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.2);
-    white-space: wrap;
-  }
-
-  .tooltip .tooltiptext::after {
-    content: "";
-    position: absolute;
-    top: -5px; /* Arrow pointing up */
-    left: 50%;
-    margin-left: -5px;
-    border-width: 5px;
-    border-style: solid;
-    border-color: transparent transparent #333 transparent;
+    transition: opacity 0.2s;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, 0.16);
   }
 
   .tooltip:hover .tooltiptext {

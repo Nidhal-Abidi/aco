@@ -9,6 +9,8 @@
     updateHeatMap,
     type HeatMapDataPoint,
   } from "./HeatMapHelperFunctions"
+  import { applyChartTheme } from "../../chartTheme"
+  import { heatCellColor, theme } from "../../theme"
 
   export let speed: string
   export let cities: City[]
@@ -22,6 +24,7 @@
   let chartLabels: string[] = getHeatMapLabels(cities)
 
   function createNewChart() {
+    applyChartTheme()
     chartValues = getHeatMapData(cities, colonySize)
     chartLabels = getHeatMapLabels(cities)
     const data = {
@@ -31,10 +34,9 @@
           data: chartValues,
           backgroundColor(context: ScriptableContext<"matrix">) {
             const value = context.raw as HeatMapDataPoint
-            const alpha = value.antCount
-            return `rgba(0, 0, 0, ${alpha})`
+            return heatCellColor(value.antCount)
           },
-          borderColor: "rgba(0, 0, 0, 0.2)",
+          borderColor: theme.border,
           borderWidth: 1,
           width: ({ chart }: { chart: Chart }) =>
             (chart.chartArea || {}).width / chartLabels.length - 1,
@@ -62,8 +64,12 @@
             labels: chartLabels,
             ticks: {
               display: true,
+              color: theme.muted,
             },
             grid: {
+              display: false,
+            },
+            border: {
               display: false,
             },
           },
@@ -73,8 +79,12 @@
             offset: true,
             ticks: {
               display: true,
+              color: theme.muted,
             },
             grid: {
+              display: false,
+            },
+            border: {
               display: false,
             },
           },

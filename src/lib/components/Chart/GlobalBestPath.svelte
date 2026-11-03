@@ -4,6 +4,8 @@
   import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
   import { playAntSound } from "../../helpers/playAntSound"
   import type { City } from "../../algorithms/acoAlgorithms"
+  import { applyChartTheme, lineChartOptions } from "../../chartTheme"
+  import { theme } from "../../theme"
 
   export let globalBestPathPerIteration: string[][]
   export let cities: City[]
@@ -15,19 +17,17 @@
   let ctx: CanvasRenderingContext2D
 
   function createNewChart() {
+    applyChartTheme()
     chart = new Chart(ctx, {
       type: "line",
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-      },
+      options: lineChartOptions(),
       data: {
         labels: [],
         datasets: [
           {
             label: "Global Shortest Distance",
-            backgroundColor: "rgb(34, 139, 34)",
-            borderColor: "rgb(34, 139, 34)",
+            backgroundColor: theme.amber,
+            borderColor: theme.amber,
             data: [],
           },
         ],
@@ -66,7 +66,6 @@
   canvas {
     width: 100%;
     height: 100%;
-    max-height: 250px;
     display: block;
   }
 </style>

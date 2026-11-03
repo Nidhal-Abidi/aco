@@ -3,42 +3,38 @@
     $: formattedTime = timeSpent.toFixed(2)
 </script>
 
-<div class="time-display-wrapper">
-    <div class="time-display">
-        <span class="time">Execution Time: {formattedTime}</span>
-        <span class="unit">ms</span>
-    </div>
+<div class="time-display">
+    <span class="label">Execution time</span>
+    <span class="time">{formattedTime}</span>
+    <span class="unit">ms</span>
 </div>
 
 <style>
-    .time-display-wrapper{
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        padding:0.5rem 0;
-        background: transparent;
-    }
-    .time-display{
+    .time-display {
         display: inline-flex;
         align-items: baseline;
-        background: #f3f4f6;
-        padding:0.25rem 0.5rem;
-        border-radius: .25rem;
-        font-family: monospace;
+        gap: 0.35rem;
+        white-space: nowrap;
     }
-    .time{
-        font-size: .875rem;
-        font-weight:600;
-        color: #374151;
+
+    .label {
+        font-size: 0.75rem;
+        font-weight: 650;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+        color: var(--muted);
     }
-    .unit{
-        margin-left: .25rem;
-        font-size: .75rem;
-        color: #6b7280;
+
+    .time {
+        font-family: var(--mono);
+        font-size: 0.95rem;
+        font-weight: 600;
+        color: var(--text);
     }
-    @media(max-width:768px){
-        .time-display-wrapper{
-            padding: .25rem 0;
-        }
+
+    .unit {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--muted);
     }
 </style>

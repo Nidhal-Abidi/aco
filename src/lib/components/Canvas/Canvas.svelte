@@ -62,6 +62,8 @@
     ctx = canvas.getContext("2d")!
     resizeCanvas()
     window.addEventListener("resize", resizeCanvas)
+    const redrawWhenFontsReady = () => redraw()
+    document.fonts?.ready.then(redrawWhenFontsReady)
     return () => window.removeEventListener("resize", resizeCanvas)
   })
 

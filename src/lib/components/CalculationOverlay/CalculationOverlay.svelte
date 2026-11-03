@@ -20,7 +20,7 @@
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(15, 23, 42, 0.45);
     display: flex;
     justify-content: center;
     align-items: center;
@@ -28,22 +28,26 @@
   }
 
   .content {
-    background-color: white;
-    padding: 5rem;
-    border-radius: 5px;
+    width: min(22rem, calc(100% - 2rem));
+    background: var(--surface);
+    padding: 1.75rem 1.5rem;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: 0 16px 40px rgba(15, 23, 42, 0.18);
     text-align: center;
-    font-size: 1.5rem;
-    color: gray;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text);
   }
 
   .spinner {
-    border: 1rem solid gray;
-    border-top: 1rem solid #3498db;
+    border: 0.35rem solid var(--border);
+    border-top: 0.35rem solid var(--accent);
     border-radius: 50%;
-    width: 5rem;
-    height: 5rem;
+    width: 2.75rem;
+    height: 2.75rem;
     animation: spin 1s linear infinite;
-    margin: 0 auto 2rem;
+    margin: 0 auto 1rem;
   }
 
   @keyframes spin {
@@ -57,6 +61,8 @@
 
   progress {
     width: 100%;
-    margin-top: 10px;
+    height: 0.45rem;
+    margin-top: 0.85rem;
+    accent-color: var(--accent);
   }
 </style>
