@@ -8,10 +8,15 @@ export type City = {
   distanceTo: Record<string, number>
   pheromoneTo: Record<string, number>
   lineWidthTo: Record<string, number>
-  edgeAntFlow: Record<string, number>
+  edgeAntFlow?: Record<string, number>
 }
 
-// Returns [ACOIterations, antsChosenPaths]
+export type AcoResult = {
+  iterations: City[][]
+  localBestPathPerIteration: string[][]
+  globalBestPathPerIteration: string[][]
+}
+
 export function startACOForTSP(
   cities: City[],
   acoMode: string,
@@ -22,12 +27,10 @@ export function startACOForTSP(
   rho: number,
   iterations: number,
   progressCallBack: (progress: number) => void
-): [City[][], string[][][]] {
-  // Array will be used later for the animation of: Graph & Matrix
+): AcoResult {
   let ACOIterations: City[][] = []
-
-  // Array will be used later for the animation of: List of cities visited by each ant in order.
-  let antsChosenPaths: string[][][] = []
+  const localBestPathPerIteration: string[][] = []
+  const globalBestPathPerIteration: string[][] = []
 
   let updatedCities = citiesDeepCopy(cities)
 
@@ -35,58 +38,51 @@ export function startACOForTSP(
   let tauMin = 0
 
   if (acoMode === "max-min-as") {
-    // Get an initial solution to calculate τ_max and τ_min
-    const [nearestNeighborPath, nearestNeighborPathLength] =
-      getNearestNeighborPathWithLength(cities)
+    const [, nearestNeighborPathLength] = getNearestNeighborPathWithLength(cities)
 
     tauMax = getTauMax(rho, nearestNeighborPathLength)
     tauMin = getTauMin(tauMax, cities.length)
-    // Set the pheromone on all the edges to tauMax
     updatedCities = initializePheromone(updatedCities, tauMax)
   }
 
   const allEdgesLengths = getLengthOfAllEdges(cities)
   let globalBestPath: string[] = []
-  let globalBestPathLength = 99999999999
+  let globalBestPathLength = Number.POSITIVE_INFINITY
+  const progressStride = Math.max(1, Math.floor(iterations / 40))
   for (let iter = 0; iter < iterations; iter++) {
-    let currentIterationAntPaths: string[][] = []
+    const currentIterationAntPaths: string[][] = []
     for (let i = 0; i < colonySize; i++) {
-      // Deep Copy of cities since I'm modifying the array directly. This modification will affect the other ants during the same iteration.
-
-      let orderOfVisitedCities = getVisitedCitiesInOrder(
-        citiesDeepCopy(updatedCities),
-        alpha,
-        beta
+      currentIterationAntPaths.push(
+        getVisitedCitiesInOrder(updatedCities, alpha, beta)
       )
-      currentIterationAntPaths.push(orderOfVisitedCities)
     }
-    antsChosenPaths.push(currentIterationAntPaths)
-    let [currentIterBestPath, currentIterBestPathLength] =
+    const [currentIterBestPath, currentIterBestPathLength] =
       getCurrentIterBestPath(currentIterationAntPaths, allEdgesLengths)
     if (currentIterBestPathLength < globalBestPathLength) {
       globalBestPath = [...currentIterBestPath]
       globalBestPathLength = currentIterBestPathLength
     }
-    // Update the values of pheromone & lineWidths. Also store the previous values for the animation.
+    localBestPathPerIteration.push([...currentIterBestPath])
+    globalBestPathPerIteration.push([...globalBestPath])
+
     switch (acoMode) {
       case "as":
         updatedCities = updateEdgeProperties(
-          citiesDeepCopy(cities),
+          citiesDeepCopy(updatedCities),
           currentIterationAntPaths,
           rho,
           colonySize
         )
         break
       case "elitist":
-        // elitistPheromoneUpdate should be called first iif lineWidth depends on  the % of change in the pheromone between iterations
         updatedCities = elitistPheromoneUpdate(
-          cities,
+          citiesDeepCopy(updatedCities),
           globalBestPath,
           globalBestPathLength,
           elitistWeight
         )
         updatedCities = updateEdgeProperties(
-          citiesDeepCopy(cities),
+          updatedCities,
           currentIterationAntPaths,
           rho,
           colonySize
@@ -95,7 +91,7 @@ export function startACOForTSP(
 
       case "max-min-as":
         updatedCities = maxMinEdgePropertiesUpdate(
-          citiesDeepCopy(cities),
+          citiesDeepCopy(updatedCities),
           currentIterBestPath,
           currentIterBestPathLength,
           currentIterationAntPaths,
@@ -104,18 +100,21 @@ export function startACOForTSP(
           tauMin,
           tauMax
         )
-        // Update tauMax and tauMin according to the new iteration best path. They will be used in the next iteration
         tauMax = getTauMax(rho, currentIterBestPathLength)
         tauMin = getTauMin(tauMax, cities.length)
         break
     }
 
     ACOIterations.push(citiesDeepCopy(updatedCities))
-    if (iter % 25 === 0) {
-      progressCallBack((100 * iter) / iterations)
+    if ((iter + 1) % progressStride === 0 || iter === iterations - 1) {
+      progressCallBack((100 * (iter + 1)) / iterations)
     }
   }
-  return [ACOIterations, antsChosenPaths]
+  return {
+    iterations: ACOIterations,
+    localBestPathPerIteration,
+    globalBestPathPerIteration,
+  }
 }
 
 function getTauMax(rho: number, bestPathlength: number) {
@@ -130,20 +129,21 @@ function getTauMin(tauMax: number, numberOfCities: number) {
 }
 
 function getNearestNeighborPathWithLength(cities: City[]): [string[], number] {
+  const visited = new Set<string>()
   const startCity = selectRandomCity(cities)
   const bestPath: string[] = [startCity.name]
   let bestPathLength = 0
   let prevCity = startCity
-  markCityAsVisited(cities, prevCity.name)
+  visited.add(prevCity.name)
 
-  while (hasUnvisitedCitiesLeft(cities)) {
-    const nextCity = getClosestNeighbor(cities, prevCity)
+  while (visited.size < cities.length) {
+    const nextCity = getClosestNeighbor(cities, prevCity, visited)
     if (nextCity == undefined)
       throw new Error(`Closest Neighbor of ${prevCity.name} doesn't Exist!!`)
     bestPath.push(nextCity.name)
     bestPathLength += prevCity.distanceTo[nextCity.name]
     prevCity = nextCity
-    markCityAsVisited(cities, prevCity.name)
+    visited.add(prevCity.name)
   }
   // Add the distance between the last visited city and the first one
   const lastVisitedCity = getCityByName(cities, bestPath[bestPath.length - 1])
@@ -153,15 +153,12 @@ function getNearestNeighborPathWithLength(cities: City[]): [string[], number] {
   return [bestPath, bestPathLength]
 }
 
-function hasUnvisitedCitiesLeft(cities: City[]): boolean {
-  return cities.some((city) => city.isVisited === false)
-}
-
-function getClosestNeighbor(cities: City[], currentCity: City) {
-  const unvisitedNeighbors = getAllUnvisitedNeighborsOfCity_i(
-    cities,
-    currentCity
-  )
+function getClosestNeighbor(
+  cities: City[],
+  currentCity: City,
+  visited: Set<string>
+) {
+  const unvisitedNeighbors = unvisitedNeighborNames(currentCity, visited)
   let closestNeighborDistance = 9999999
   let closestNeighbor = ""
 
@@ -175,26 +172,23 @@ function getClosestNeighbor(cities: City[], currentCity: City) {
 }
 
 function getVisitedCitiesInOrder(cities: City[], alpha: number, beta: number) {
-  // 'visitedCities' will contain the reslt of this fct. Final rslt = ['c_1', 'c_3', 'c_7' ...]
-  let visitedCities: string[] = []
-
-  // Select a random city to start with & mark it as visited
+  const visited = new Set<string>()
+  const visitedCities: string[] = []
   let currentCity: City = selectRandomCity(cities)
 
-  markCityAsVisited(cities, currentCity.name)
+  visited.add(currentCity.name)
   visitedCities.push(currentCity.name)
 
   while (visitedCities.length < cities.length) {
-    let nextCity = getNextCityToVisit(cities, currentCity, alpha, beta)
+    const nextCity = getNextCityToVisit(cities, currentCity, alpha, beta, visited)
 
     if (nextCity === null) break
-    // This shouldn't happen since we're tracking the nbr of visited cities here. But I added it so that TS won't complain.
     if (nextCity === undefined) {
       throw new Error(
         "Error: Something wrong happened when getting the nextCity!"
       )
     }
-    markCityAsVisited(cities, nextCity.name)
+    visited.add(nextCity.name)
     visitedCities.push(nextCity.name)
     currentCity = nextCity
   }
@@ -222,18 +216,16 @@ function getCurrentIterBestPath(
   return [currenIterBestPath, currenIterBestPathLength]
 }
 
-function markCityAsVisited(cities: City[], cityName: string) {
-  // Modify the array in place
-  for (let city of cities) {
-    if (city.name === cityName) {
-      city.isVisited = true
-      break
-    }
+function unvisitedNeighborNames(city: City, visited: Set<string>) {
+  const neighbors: string[] = []
+  for (const neighbor in city.distanceTo) {
+    if (!visited.has(neighbor)) neighbors.push(neighbor)
   }
+  return neighbors
 }
 
 /**
-  Function returns : 
+  Function returns :
      + "a City": if it's unvisited & was selected by our process.
      + "null": If all the cities were visited
      + "undefined": in every other case (Should be error cases)
@@ -242,12 +234,10 @@ function getNextCityToVisit(
   cities: City[],
   currentCity: City,
   alpha: number,
-  beta: number
+  beta: number,
+  visited: Set<string>
 ) {
-  const unvisitedNeighborsList = getAllUnvisitedNeighborsOfCity_i(
-    cities,
-    currentCity
-  )
+  const unvisitedNeighborsList = unvisitedNeighborNames(currentCity, visited)
   if (unvisitedNeighborsList.length == 0) return null
   if (unvisitedNeighborsList.length == 1)
     return getCityByName(cities, unvisitedNeighborsList[0])
@@ -372,21 +362,16 @@ export function getRandomIntInclusive(min: number, max: number) {
 }
 
 export function citiesDeepCopy(cities: City[]): City[] {
-  let res: City[] = []
-  for (const city of cities) {
-    let copiedCity: City = {
-      x: city.x,
-      y: city.y,
-      name: city.name,
-      isVisited: city.isVisited,
-      distanceTo: JSON.parse(JSON.stringify(city.distanceTo)),
-      pheromoneTo: JSON.parse(JSON.stringify(city.pheromoneTo)),
-      lineWidthTo: JSON.parse(JSON.stringify(city.lineWidthTo)),
-      edgeAntFlow: JSON.parse(JSON.stringify(city.edgeAntFlow)),
-    }
-    res.push(copiedCity)
-  }
-  return res
+  return cities.map((city) => ({
+    x: city.x,
+    y: city.y,
+    name: city.name,
+    isVisited: city.isVisited,
+    distanceTo: { ...city.distanceTo },
+    pheromoneTo: { ...city.pheromoneTo },
+    lineWidthTo: { ...city.lineWidthTo },
+    edgeAntFlow: { ...(city.edgeAntFlow ?? {}) },
+  }))
 }
 
 function getNewLineWidth(
@@ -447,6 +432,12 @@ function getAntsContributionToEdges(
 ) {
   const allEdgesLengths = getLengthOfAllEdges(cities)
   const antsContributionToEdges: Record<string, number> = {}
+  const addDeposit = (edge: string, reverseEdge: string, amount: number) => {
+    antsContributionToEdges[edge] =
+      (antsContributionToEdges[edge] ?? 0) + amount
+    antsContributionToEdges[reverseEdge] =
+      (antsContributionToEdges[reverseEdge] ?? 0) + amount
+  }
   for (const antPath of currentIterationAntPaths) {
     const currentAntContrib = getCurrentAntContribution(
       antPath,
@@ -454,15 +445,16 @@ function getAntsContributionToEdges(
     )
 
     for (let i = 0; i < antPath.length - 1; i++) {
-      const currentEdge = antPath[i] + antPath[i + 1]
-      const reverseEdge = antPath[i + 1] + antPath[i]
-      if (currentEdge in antsContributionToEdges) {
-        antsContributionToEdges[currentEdge] += currentAntContrib
-        antsContributionToEdges[reverseEdge] += currentAntContrib
-      } else {
-        antsContributionToEdges[currentEdge] = currentAntContrib
-        antsContributionToEdges[reverseEdge] = currentAntContrib
-      }
+      addDeposit(
+        antPath[i] + antPath[i + 1],
+        antPath[i + 1] + antPath[i],
+        currentAntContrib
+      )
+    }
+    if (antPath.length > 1) {
+      const last = antPath[antPath.length - 1]
+      const first = antPath[0]
+      addDeposit(last + first, first + last, currentAntContrib)
     }
   }
   return antsContributionToEdges
@@ -476,7 +468,7 @@ function getCurrentAntContribution(
   return 1 / antPathLength
 }
 
-function updateEdgeProperties(
+export function updateEdgeProperties(
   cities: City[],
   currentIterationAntPaths: string[][],
   rho: number,
@@ -506,16 +498,13 @@ function updateEdgeProperties(
       )
     }
     // Add how many ants have crossed each edge starting from the current city.
-    city.edgeAntFlow = JSON.parse(
-      JSON.stringify(retrieveAntTraffic(city, nbrOfAntsPerEdge))
-    )
+    city.edgeAntFlow = retrieveAntTraffic(city, nbrOfAntsPerEdge)
   }
-  // Mark all cities as unvisited for the next iteration
   cities.forEach((city) => (city.isVisited = false))
   return cities
 }
 
-function elitistPheromoneUpdate(
+export function elitistPheromoneUpdate(
   cities: City[],
   globalBestPath: string[],
   globalBestPathLength: number,
@@ -604,7 +593,7 @@ function getNewPheromoneAmount(
   return (1 - rho) * oldPheromoneAmount + antsContribution
 }
 
-function maxMinEdgePropertiesUpdate(
+export function maxMinEdgePropertiesUpdate(
   cities: City[],
   currentIterBestPath: string[],
   currentIterBestPathLength: number,
@@ -620,24 +609,13 @@ function maxMinEdgePropertiesUpdate(
   for (const city of cities) {
     for (const neighbor in city.pheromoneTo) {
       const edge = city.name + neighbor
-      if (setOfIterBestPathEdges.has(edge)) {
-        // Add the deposit done by the ant that had the best iteration
-        city.pheromoneTo[neighbor] = getMaxMinNewPheromoneAmount(
-          city.pheromoneTo[neighbor],
-          bestPathPheromoneDeposit,
-          tauMin,
-          tauMax,
-          rho,
-          true
-        )
-      }
       city.pheromoneTo[neighbor] = getMaxMinNewPheromoneAmount(
         city.pheromoneTo[neighbor],
         bestPathPheromoneDeposit,
         tauMin,
         tauMax,
         rho,
-        false
+        setOfIterBestPathEdges.has(edge)
       )
       city.lineWidthTo[neighbor] = getNewLineWidth(
         colonySize,
@@ -645,10 +623,7 @@ function maxMinEdgePropertiesUpdate(
         edge
       )
     }
-    // Add how many ants have crossed each edge starting from the current city.
-    city.edgeAntFlow = JSON.parse(
-      JSON.stringify(retrieveAntTraffic(city, nbrOfAntsPerEdge))
-    )
+    city.edgeAntFlow = retrieveAntTraffic(city, nbrOfAntsPerEdge)
   }
   // Mark all cities as unvisited for the next iteration
   cities.forEach((city) => (city.isVisited = false))

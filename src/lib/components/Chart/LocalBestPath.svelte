@@ -1,19 +1,19 @@
 <script lang="ts">
   import { Chart } from "chart.js/auto"
-  import { beforeUpdate, onMount } from "svelte"
-  import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
+  import { onDestroy, onMount } from "svelte"
+  import { getChartYAxisValues, setChartSeries } from "./ChartDataPoints"
   import { applyChartTheme, lineChartOptions } from "../../chartTheme"
   import { theme } from "../../theme"
+  import type { City } from "../../algorithms/acoAlgorithms"
 
-  export let localBestPathPerIteration
-  export let cities
-  export let speed
+  export let localBestPathPerIteration: string[][]
+  export let cities: City[]
+  export let frame = -1
 
   let chartCanvas: HTMLCanvasElement
-  let chart: Chart<"line", number[], number>
-  let ctx: CanvasRenderingContext2D
+  let chart: Chart<"line", number[], number> | undefined
 
-  function createNewChart() {
+  function createNewChart(ctx: CanvasRenderingContext2D) {
     applyChartTheme()
     chart = new Chart(ctx, {
       type: "line",
@@ -22,7 +22,7 @@
         labels: [],
         datasets: [
           {
-            label: "Local Shortest Distance (Per iteration)",
+            label: "Local best path",
             backgroundColor: theme.accent,
             borderColor: theme.accent,
             data: [],
@@ -33,29 +33,19 @@
     })
   }
 
-  beforeUpdate(() => {
-    if (chart != undefined) {
-      chart.destroy()
-      createNewChart()
-    }
-    if (localBestPathPerIteration.length > 0) {
-      const yAxisValues = getChartYAxisValues(cities, localBestPathPerIteration)
+  $: yValues = getChartYAxisValues(cities, localBestPathPerIteration)
 
-      for (let i = 0; i < yAxisValues.length; i++) {
-        setTimeout(
-          () => {
-            addDataPoint(chart, yAxisValues[i])
-          },
-          parseInt(speed) * i
-        )
-      }
-    }
-  })
+  $: if (chart) {
+    const visible = frame < 0 ? [] : yValues.slice(0, frame + 1)
+    setChartSeries(chart, visible)
+  }
 
   onMount(() => {
-    ctx = chartCanvas.getContext("2d")!
-    createNewChart()
+    const ctx = chartCanvas.getContext("2d")
+    if (ctx) createNewChart(ctx)
   })
+
+  onDestroy(() => chart?.destroy())
 </script>
 
 <canvas bind:this={chartCanvas}></canvas>

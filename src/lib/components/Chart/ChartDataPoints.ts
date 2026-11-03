@@ -17,14 +17,11 @@ export function getChartYAxisValues(
   return yAxisValues
 }
 
-export function addDataPoint(
-  chart: Chart<"line", any[], any>,
-  dataPoint: number
+export function setChartSeries(
+  chart: Chart<"line", number[], number>,
+  values: number[]
 ) {
-  const data = chart.data
-  if (data.datasets.length > 0) {
-    data.labels?.push(data.labels.length + 1)
-    data.datasets[0].data.push(dataPoint)
-    chart.update()
-  }
+  chart.data.labels = values.map((_, index) => index + 1)
+  chart.data.datasets[0].data = values
+  chart.update("none")
 }

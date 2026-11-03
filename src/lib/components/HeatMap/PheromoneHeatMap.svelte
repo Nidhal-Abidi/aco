@@ -1,6 +1,6 @@
 <script lang="ts">
   import { Chart, type ScriptableContext } from "chart.js/auto"
-  import { beforeUpdate, onMount } from "svelte"
+  import { onDestroy, onMount } from "svelte"
   import { MatrixController, MatrixElement } from "chartjs-chart-matrix"
   import type { City } from "../../algorithms/acoAlgorithms"
   import {
@@ -12,44 +12,28 @@
   import { applyChartTheme } from "../../chartTheme"
   import { heatCellColor, theme } from "../../theme"
 
-  export let speed: string
   export let cities: City[]
   export let ACOIterations: City[][]
   export let colonySize: number
+  export let frame = -1
 
   let chartCanvas: HTMLCanvasElement
-  let chart: Chart<"matrix", HeatMapDataPoint[], string>
-  let ctx: CanvasRenderingContext2D
-  let chartValues: HeatMapDataPoint[] = getHeatMapData(cities, colonySize)
-  let chartLabels: string[] = getHeatMapLabels(cities)
+  let chart: Chart<"matrix", HeatMapDataPoint[], string> | undefined
+  let ctx: CanvasRenderingContext2D | undefined
+  let labelKey = ""
 
-  function createNewChart() {
+  function createNewChart(iterationCities: City[]) {
+    if (!ctx) return
     applyChartTheme()
-    chartValues = getHeatMapData(cities, colonySize)
-    chartLabels = getHeatMapLabels(cities)
-    const data = {
-      datasets: [
-        {
-          label: "Percentage of Ants that walked on an Edge",
-          data: chartValues,
-          backgroundColor(context: ScriptableContext<"matrix">) {
-            const value = context.raw as HeatMapDataPoint
-            return heatCellColor(value.antCount)
-          },
-          borderColor: theme.border,
-          borderWidth: 1,
-          width: ({ chart }: { chart: Chart }) =>
-            (chart.chartArea || {}).width / chartLabels.length - 1,
-          height: ({ chart }: { chart: Chart }) =>
-            (chart.chartArea || {}).height / chartLabels.length - 1,
-        },
-      ],
-    }
+    const chartLabels = getHeatMapLabels(iterationCities)
+    labelKey = chartLabels.join("|")
+    const chartValues = getHeatMapData(iterationCities, colonySize)
     chart = new Chart(ctx, {
       type: "matrix",
       options: {
         responsive: true,
         maintainAspectRatio: false,
+        animation: false,
         layout: {
           padding: {
             top: 20,
@@ -98,44 +82,57 @@
               label(context) {
                 const value = context.raw as HeatMapDataPoint
                 return [
-                  `AntFlowRate(${value.x + ", " + value.y}) = ${value.antCount}`,
+                  `Edge ant flow (${value.x}, ${value.y}) = ${value.antCount}`,
                 ]
               },
             },
           },
         },
       },
-      data,
+      data: {
+        datasets: [
+          {
+            label: "Edge ant flow",
+            data: chartValues,
+            backgroundColor(context: ScriptableContext<"matrix">) {
+              const value = context.raw as HeatMapDataPoint
+              return heatCellColor(value.antCount)
+            },
+            borderColor: theme.border,
+            borderWidth: 1,
+            width: ({ chart }: { chart: Chart }) =>
+              (chart.chartArea || {}).width / chartLabels.length - 1,
+            height: ({ chart }: { chart: Chart }) =>
+              (chart.chartArea || {}).height / chartLabels.length - 1,
+          },
+        ],
+      },
     })
   }
 
-  beforeUpdate(() => {
-    if (ACOIterations.length === 0) {
-      if (chart != undefined) {
-        chart.destroy()
-        createNewChart()
-      }
-    } else {
-      if (chart != undefined) {
-        chart.destroy()
-        createNewChart()
-      }
-      for (let iter = 0; iter < ACOIterations.length; iter++) {
-        setTimeout(
-          () => {
-            updateHeatMap(ACOIterations[iter], chart, colonySize)
-          },
-          parseInt(speed) * iter
-        )
-      }
+  function draw(iterationCities: City[], ants: number) {
+    if (!ctx) return
+    const nextKey = getHeatMapLabels(iterationCities).join("|")
+    if (!chart || nextKey !== labelKey) {
+      chart?.destroy()
+      createNewChart(iterationCities)
+      return
     }
-  })
+    updateHeatMap(iterationCities, chart, ants)
+  }
+
+  $: draw(
+    frame >= 0 && ACOIterations[frame] ? ACOIterations[frame] : cities,
+    colonySize
+  )
 
   onMount(() => {
     Chart.register(MatrixController, MatrixElement)
-    ctx = chartCanvas.getContext("2d")!
-    createNewChart()
+    ctx = chartCanvas.getContext("2d") ?? undefined
+    draw(cities, colonySize)
   })
+
+  onDestroy(() => chart?.destroy())
 </script>
 
 <canvas bind:this={chartCanvas}></canvas>

@@ -19,13 +19,12 @@ export function getHeatMapData(
   for (const city of AcoCurrentIteration) {
     // Pheromone = 0 for the same city
     heatMapData.push({ x: city.name, y: city.name, antCount: 0 })
-    for (const neighbor in city.edgeAntFlow) {
+    const edgeAntFlow = city.edgeAntFlow ?? {}
+    for (const neighbor in edgeAntFlow) {
       heatMapData.push({
         x: city.name,
         y: neighbor,
-        antCount: roundUpTo3Decimal(
-          city.edgeAntFlow[neighbor] / (colonySize * 2)
-        ),
+        antCount: roundUpTo3Decimal(edgeAntFlow[neighbor] / colonySize),
       })
     }
   }
@@ -39,5 +38,5 @@ export function updateHeatMap(
 ) {
   const updatedHeatMapData = getHeatMapData(AcoCurrentIteration, colonySize)
   chart.data.datasets[0].data = updatedHeatMapData
-  chart.update()
+  chart.update("none")
 }

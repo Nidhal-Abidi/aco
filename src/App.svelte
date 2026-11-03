@@ -9,131 +9,135 @@
     cities7,
     cities10,
     cities15,
+    cities20,
   } from "./lib/helpers/citiesArrays"
   import { deepCopyOfCitiesArray } from "./lib/helpers/citiesDeepCopy"
+  import { unlockAntSound } from "./lib/helpers/playAntSound"
   import PheromoneHeatMap from "./lib/components/HeatMap/PheromoneHeatMap.svelte"
   import CalculationOverlay from "./lib/components/CalculationOverlay/CalculationOverlay.svelte"
   import Worker from "./aco-worker?worker"
-  import { onMount } from "svelte"
-  import ExecutionTime from "./lib/components/ExecutionTime.svelte";
+  import { onDestroy, onMount, tick } from "svelte"
+  import ExecutionTime from "./lib/components/ExecutionTime.svelte"
+  import { completeAcoRun, type AcoWorkerLike } from "./lib/acoRun"
+  import { createPlayback } from "./lib/playback"
+  import { defaultControls, type AcoControls } from "./lib/defaultControls"
 
-  let userControls = {
-    nbrOfCities: "10",
-    acoMode: "as",
-    colonySize: 30,
-    nbrOfIterations: 200,
-    alpha: 3,
-    beta: 1,
-    rho: 0.1,
-    initialPheromone: 1,
-    sound: "on",
-    speed: "150",
-    elitistWeight: 2,
-  }
+  let userControls: AcoControls = { ...defaultControls }
   let isCalculating = false
   let progress = 0
+  let runError = ""
+  let frame = -1
+  let runToken = 0
 
   let ACOIterations: City[][] = []
-  let antsChosenPaths: string[][][] = []
   let globalBestPathPerIteration: string[][] = []
   let localBestPathPerIteration: string[][] = []
   let timeSpent = 0
   let cities: City[] = deepCopyOfCitiesArray(cities10)
+  let travelMap: HTMLElement | undefined
+  let activeWorker: Worker | undefined
+  let speed = defaultControls.speed
+  const playback = createPlayback()
 
-  async function updateUserControls(e: CustomEvent) {
-    isCalculating = true
-    progress = 0
-    // Get the params chosen by the user for this algo run.
-    userControls = JSON.parse(JSON.stringify(e.detail))
+  $: playback.setSpeed(Number(speed))
 
-    switch (userControls.nbrOfCities) {
+  function citiesForCount(count: string) {
+    switch (count) {
       case "5":
-        cities = deepCopyOfCitiesArray(cities5)
-        break
+        return deepCopyOfCitiesArray(cities5)
       case "7":
-        cities = deepCopyOfCitiesArray(cities7)
-        break
+        return deepCopyOfCitiesArray(cities7)
       case "10":
-        cities = deepCopyOfCitiesArray(cities10)
-        break
+        return deepCopyOfCitiesArray(cities10)
       case "15":
-        cities = deepCopyOfCitiesArray(cities15)
-        break
+        return deepCopyOfCitiesArray(cities15)
+      case "20":
+        return deepCopyOfCitiesArray(cities20)
+      default:
+        throw new Error(`Unknown city count: ${count}`)
     }
-
-    resetVisualization(e)
-    // Start the web worker containing the ACO algo
-    let {
-      Worker_timeSpent,
-      Worker_ACOIterations,
-      Worker_antsChosenPaths,
-      Worker_updatedCities,
-      Worker_localBestPathPerIteration,
-      Worker_globalBestPathPerIteration,
-    } = await runACO(cities, userControls)
-
-    ACOIterations = Worker_ACOIterations
-    antsChosenPaths = Worker_antsChosenPaths
-    cities = Worker_updatedCities
-    localBestPathPerIteration = Worker_localBestPathPerIteration
-    globalBestPathPerIteration = Worker_globalBestPathPerIteration
-    timeSpent = Worker_timeSpent
-    isCalculating = false
   }
 
-  function resetVisualization(e: CustomEvent) {
+  function revealTravelMap() {
+    if (!window.matchMedia("(max-width: 768px)").matches) return
+    travelMap?.scrollIntoView({ behavior: "smooth", block: "start" })
+  }
+
+  function clearRunVisuals() {
+    playback.stop()
+    frame = -1
+    ACOIterations = []
     globalBestPathPerIteration = []
     localBestPathPerIteration = []
-    ACOIterations = []
+    timeSpent = 0
   }
 
-  function runACO(
-    cities: City[],
-    userControls: {
-      acoMode: string
-      elitistWeight: number
-      colonySize: number
-      alpha: number
-      beta: number
-      rho: number
-      nbrOfIterations: number
+  async function updateUserControls(e: CustomEvent<AcoControls>) {
+    unlockAntSound()
+    if (isCalculating) return
+    const token = ++runToken
+    isCalculating = true
+    runError = ""
+    progress = 0
+    userControls = { ...e.detail }
+    cities = citiesForCount(userControls.nbrOfCities)
+    clearRunVisuals()
+
+    try {
+      const result = await runACO(cities, userControls)
+      if (token !== runToken) return
+      progress = 100
+      await tick()
+      if (token !== runToken) return
+      ACOIterations = result.ACOIterations
+      cities = result.updatedCities
+      localBestPathPerIteration = result.localBestPathPerIteration
+      globalBestPathPerIteration = result.globalBestPathPerIteration
+      timeSpent = result.timeSpent
+      playback.start(ACOIterations.length, Number(userControls.speed), (index) => {
+        frame = index
+      })
+      revealTravelMap()
+    } catch (error) {
+      if (token !== runToken) return
+      runError = error instanceof Error ? error.message : "The run failed."
+    } finally {
+      if (token === runToken) isCalculating = false
     }
-  ): Promise<{
-    Worker_timeSpent:number
-    Worker_ACOIterations: City[][]
-    Worker_antsChosenPaths: string[][][]
-    Worker_updatedCities: City[]
-    Worker_localBestPathPerIteration: string[][]
-    Worker_globalBestPathPerIteration: string[][]
-  }> {
-    return new Promise((resolve) => {
-      const worker = new Worker()
-      const startTime = performance.now()
-
-      worker.postMessage({ cities, userControls })
-
-      worker.onmessage = (event) => {
-        if (event.data.type === "progress") {
-          progress = event.data.value
-        } else if (event.data.type === "result") {
-          const endTime = performance.now()
-          const timeSpent = endTime - startTime
-          resolve({
-            Worker_timeSpent: timeSpent,
-            Worker_ACOIterations: event.data.ACOIterations,
-            Worker_antsChosenPaths: event.data.antsChosenPaths,
-            Worker_updatedCities: event.data.updatedCities,
-            Worker_localBestPathPerIteration:
-              event.data.localBestPathPerIteration,
-            Worker_globalBestPathPerIteration:
-              event.data.globalBestPathPerIteration,
-          })
-        }
-      }
-    })
   }
+
+  function resetVisualization(e: CustomEvent<{ nbrOfCities: string }>) {
+    runToken += 1
+    activeWorker?.terminate()
+    isCalculating = false
+    progress = 0
+    runError = ""
+    cities = citiesForCount(e.detail.nbrOfCities)
+    clearRunVisuals()
+  }
+
+  function runACO(nextCities: City[], controls: AcoControls) {
+    activeWorker?.terminate()
+    const worker = new Worker()
+    activeWorker = worker
+    const startedAt = performance.now()
+    worker.postMessage({ cities: nextCities, userControls: controls })
+    return completeAcoRun(worker as unknown as AcoWorkerLike, (value) => {
+      progress = value
+    }).then((result) => ({
+      ...result,
+      timeSpent: performance.now() - startedAt,
+    }))
+  }
+
   onMount(() => {
     console.log("Nidhal Labidi | Computer Science Masters student")
+  })
+
+  onDestroy(() => {
+    runToken += 1
+    playback.stop()
+    activeWorker?.terminate()
   })
 </script>
 
@@ -144,40 +148,61 @@
     <div class="title-block">
       <p class="kicker">Traveling salesman problem</p>
       <h1>Ant Colony Optimization</h1>
+      <p class="lead">
+        Ants build a closed path through every city. Path length adds the edge
+        distances, including the return edge. A shorter path receives more
+        pheromone, so later ants are more likely to follow it.
+      </p>
     </div>
     <p class="author">Nidhal Labidi</p>
   </header>
 
   <section class="controls-panel">
     <UserControls
-      on:startAnimation={async (e) => await updateUserControls(e)}
+      isRunning={isCalculating}
+      on:startAnimation={updateUserControls}
       on:resetAnimation={resetVisualization}
+      bind:speed
     />
     <div class="stat-slot">
       <ExecutionTime {timeSpent} />
     </div>
   </section>
 
+  {#if runError}
+    <p class="run-error" role="alert">{runError}</p>
+  {/if}
+
   <main>
-    <section class="panel cities-container">
-      <h2>Travel map</h2>
+    <section class="panel heat-map-container">
+      <h2>Edge ant flow</h2>
+      <p class="panel-note">
+        Each cell is the fraction of the colony that crossed that edge in the
+        current iteration.
+      </p>
+      <div class="panel-body">
+        <PheromoneHeatMap
+          {cities}
+          {ACOIterations}
+          colonySize={Number(userControls.colonySize)}
+          {frame}
+        />
+      </div>
+    </section>
+    <section class="panel cities-container" bind:this={travelMap}>
+      <h2>Cities</h2>
+      <p class="panel-note">
+        Edge distance is the straight-line length in this square: the side is
+        1, distances are rounded to 0.1, and the layouts are fixed. Thickness
+        is how many ants used that edge this iteration. The highlight is the
+        global best path.
+      </p>
       <div class="panel-body">
         <Canvas
           {cities}
           ACOIter={ACOIterations}
           {globalBestPathPerIteration}
-          speed={userControls.speed}
-        />
-      </div>
-    </section>
-    <section class="panel heat-map-container">
-      <h2>Pheromone heat map</h2>
-      <div class="panel-body">
-        <PheromoneHeatMap
-          {cities}
-          speed={userControls.speed}
-          {ACOIterations}
-          colonySize={userControls.colonySize}
+          {frame}
         />
       </div>
     </section>
@@ -186,22 +211,30 @@
   <footer>
     <section class="panel chart-container">
       <h2>Global best path</h2>
+      <p class="panel-note">
+        Path length of the global best path after each iteration, in the same
+        units as the square.
+      </p>
       <div class="panel-body chart-body">
         <GlobalBestPath
           {globalBestPathPerIteration}
           {cities}
-          speed={userControls.speed}
           sound={userControls.sound}
+          {frame}
         />
       </div>
     </section>
     <section class="panel chart-container">
       <h2>Local best path</h2>
+      <p class="panel-note">
+        Path length of the shortest path in that iteration. It can rise when a
+        later iteration is worse.
+      </p>
       <div class="panel-body chart-body">
         <LocalBestPath
           {cities}
           {localBestPathPerIteration}
-          speed={userControls.speed}
+          {frame}
         />
       </div>
     </section>
@@ -217,6 +250,7 @@
     padding: 1rem 1.25rem 1.25rem;
     background: var(--bg);
     color: var(--text);
+    overflow-x: clip;
   }
 
   .page-header {
@@ -241,10 +275,25 @@
     line-height: 1.2;
   }
 
+  .lead {
+    max-width: 42rem;
+    margin-top: 0.35rem;
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: var(--text);
+  }
+
   .author {
     font-size: 0.9rem;
     color: var(--muted);
     white-space: nowrap;
+  }
+
+  .run-error {
+    margin: 0;
+    color: #9f1239;
+    font-size: 0.95rem;
+    font-weight: 600;
   }
 
   .controls-panel {
@@ -294,6 +343,17 @@
     color: var(--muted);
   }
 
+  .panel-note {
+    margin: 0;
+    padding: 0.25rem 0.9rem 0;
+    font-size: 0.8rem;
+    font-weight: 500;
+    line-height: 1.35;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--muted);
+  }
+
   .panel-body {
     flex: 1;
     min-height: 0;
@@ -301,12 +361,12 @@
   }
 
   .cities-container {
-    flex: 6;
+    flex: 5;
     min-width: 300px;
   }
 
   .heat-map-container {
-    flex: 4;
+    flex: 5;
     min-width: 200px;
   }
 
@@ -349,7 +409,7 @@
     }
 
     .chart-body {
-      height: 150px;
+      height: 112px;
     }
   }
 
@@ -361,7 +421,14 @@
     .cities-container,
     .heat-map-container {
       flex: 1;
+    }
+
+    .heat-map-container {
       min-height: 300px;
+    }
+
+    .cities-container {
+      min-height: 420px;
     }
   }
 
@@ -369,7 +436,7 @@
     .aco-visualization {
       min-height: auto;
       height: auto;
-      overflow: visible;
+      overflow-x: clip;
       padding: 0.75rem;
     }
 
@@ -396,6 +463,10 @@
     .heat-map-container {
       min-width: 0;
       min-height: 50vh;
+    }
+
+    .cities-container {
+      min-height: 70dvh;
     }
   }
 </style>

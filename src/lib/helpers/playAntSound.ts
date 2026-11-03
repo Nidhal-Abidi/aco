@@ -1,54 +1,69 @@
-let audioContext: AudioContext
+let audioContext: AudioContext | undefined
+let noiseBuffer: AudioBuffer | undefined
 
-function initAudio() {
-  audioContext = new (window.AudioContext || window.webkitAudioContext)()
+function createAudioContext() {
+  const AudioContextCtor =
+    window.AudioContext ||
+    (window as Window & { webkitAudioContext?: typeof AudioContext })
+      .webkitAudioContext
+  if (!AudioContextCtor) return undefined
+  return new AudioContextCtor()
+}
+
+export function unlockAntSound() {
+  if (!audioContext) audioContext = createAudioContext()
+  if (!audioContext) return
+  if (audioContext.state === "suspended") {
+    void audioContext.resume()
+  }
+  const silence = audioContext.createBuffer(1, 1, audioContext.sampleRate)
+  const source = audioContext.createBufferSource()
+  const gain = audioContext.createGain()
+  source.buffer = silence
+  gain.gain.setValueAtTime(0, audioContext.currentTime)
+  source.connect(gain)
+  gain.connect(audioContext.destination)
+  source.start()
+}
+
+function getNoiseBuffer(context: AudioContext) {
+  if (!noiseBuffer || noiseBuffer.sampleRate !== context.sampleRate) {
+    noiseBuffer = context.createBuffer(1, 4096, context.sampleRate)
+    const channelData = noiseBuffer.getChannelData(0)
+    for (let i = 0; i < channelData.length; i++) {
+      channelData[i] = Math.random() * 2 - 1
+    }
+  }
+  return noiseBuffer
 }
 
 export function playAntSound() {
-  if (!audioContext) initAudio()
+  const context = audioContext
+  if (!context || context.state !== "running") return
 
-  const bufferSize = 4096
-  const channels = 1
-  const audioBuffer = audioContext.createBuffer(
-    channels,
-    bufferSize,
-    audioContext.sampleRate
-  )
-  const bufferSource = audioContext.createBufferSource()
-  const filter = audioContext.createBiquadFilter()
-  const gainNode = audioContext.createGain()
+  const bufferSource = context.createBufferSource()
+  const filter = context.createBiquadFilter()
+  const gainNode = context.createGain()
 
-  // Create noise
-  const channelData = audioBuffer.getChannelData(0)
-  for (let i = 0; i < bufferSize; i++) {
-    channelData[i] = Math.random() * 2 - 1
-  }
-
-  bufferSource.buffer = audioBuffer
+  bufferSource.buffer = getNoiseBuffer(context)
   bufferSource.loop = true
 
-  // Set up filter
   filter.type = "bandpass"
-  filter.frequency.setValueAtTime(2000, audioContext.currentTime)
-  filter.Q.setValueAtTime(10, audioContext.currentTime)
+  filter.Q.setValueAtTime(10, context.currentTime)
 
-  // Set up gain
-  gainNode.gain.setValueAtTime(0, audioContext.currentTime)
-  gainNode.gain.linearRampToValueAtTime(0.1, audioContext.currentTime + 0.01)
-  gainNode.gain.linearRampToValueAtTime(0, audioContext.currentTime + 0.05)
+  gainNode.gain.setValueAtTime(0, context.currentTime)
+  gainNode.gain.linearRampToValueAtTime(0.1, context.currentTime + 0.01)
+  gainNode.gain.linearRampToValueAtTime(0, context.currentTime + 0.05)
 
-  // Connect nodes
   bufferSource.connect(filter)
   filter.connect(gainNode)
-  gainNode.connect(audioContext.destination)
+  gainNode.connect(context.destination)
 
-  // Modulate the filter frequency to create a "scratching" effect
-  const now = audioContext.currentTime
+  const now = context.currentTime
   filter.frequency.setValueAtTime(2000, now)
   filter.frequency.linearRampToValueAtTime(3000, now + 0.025)
   filter.frequency.linearRampToValueAtTime(2000, now + 0.05)
 
-  // Start and stop the sound
   bufferSource.start()
   bufferSource.stop(now + 0.05)
 }

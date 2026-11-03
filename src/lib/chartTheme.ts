@@ -23,14 +23,26 @@ export function lineChartOptions(): ChartOptions<"line"> {
           pointStyle: "line",
         },
       },
+      tooltip: {
+        callbacks: {
+          title(items) {
+            return `Iteration: ${items[0]?.label ?? ""}`
+          },
+          label(item) {
+            return `${item.dataset.label}: ${item.formattedValue}`
+          },
+        },
+      },
     },
     scales: {
       x: {
+        title: { display: true, text: "Iteration", color: theme.muted },
         grid: { color: theme.border },
         ticks: { color: theme.muted },
         border: { color: theme.border },
       },
       y: {
+        title: { display: true, text: "Path length", color: theme.muted },
         grid: { color: theme.border },
         ticks: { color: theme.muted },
         border: { color: theme.border },

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { Chart } from "chart.js/auto"
-  import { beforeUpdate, onMount } from "svelte"
-  import { addDataPoint, getChartYAxisValues } from "./ChartDataPoints"
+  import { onDestroy, onMount } from "svelte"
+  import { getChartYAxisValues, setChartSeries } from "./ChartDataPoints"
   import { playAntSound } from "../../helpers/playAntSound"
   import type { City } from "../../algorithms/acoAlgorithms"
   import { applyChartTheme, lineChartOptions } from "../../chartTheme"
@@ -9,14 +9,14 @@
 
   export let globalBestPathPerIteration: string[][]
   export let cities: City[]
-  export let speed
-  export let sound
+  export let sound: string
+  export let frame = -1
 
   let chartCanvas: HTMLCanvasElement
-  let chart: Chart<"line", number[], number>
-  let ctx: CanvasRenderingContext2D
+  let chart: Chart<"line", number[], number> | undefined
+  let soundedFrame = -1
 
-  function createNewChart() {
+  function createNewChart(ctx: CanvasRenderingContext2D) {
     applyChartTheme()
     chart = new Chart(ctx, {
       type: "line",
@@ -25,7 +25,7 @@
         labels: [],
         datasets: [
           {
-            label: "Global Shortest Distance",
+            label: "Global best path",
             backgroundColor: theme.amber,
             borderColor: theme.amber,
             data: [],
@@ -35,29 +35,32 @@
     })
   }
 
-  beforeUpdate(() => {
-    const yAxisValues = getChartYAxisValues(cities, globalBestPathPerIteration)
-    if (chart != undefined) {
-      chart.destroy()
-      createNewChart()
+  $: yValues = getChartYAxisValues(cities, globalBestPathPerIteration)
+
+  $: if (chart) {
+    const visible = frame < 0 ? [] : yValues.slice(0, frame + 1)
+    setChartSeries(chart, visible)
+  }
+
+  $: if (frame !== soundedFrame) {
+    const current = frame
+    if (
+      sound === "on" &&
+      current > soundedFrame &&
+      current > 0 &&
+      yValues[current] < yValues[current - 1]
+    ) {
+      playAntSound()
     }
-    if (globalBestPathPerIteration.length > 0) {
-      for (let i = 0; i < yAxisValues.length; i++) {
-        setTimeout(
-          () => {
-            addDataPoint(chart, yAxisValues[i])
-            sound === "on" && playAntSound()
-          },
-          parseInt(speed) * i
-        )
-      }
-    }
-  })
+    soundedFrame = current
+  }
 
   onMount(() => {
-    ctx = chartCanvas.getContext("2d")!
-    createNewChart()
+    const ctx = chartCanvas.getContext("2d")
+    if (ctx) createNewChart(ctx)
   })
+
+  onDestroy(() => chart?.destroy())
 </script>
 
 <canvas bind:this={chartCanvas}></canvas>

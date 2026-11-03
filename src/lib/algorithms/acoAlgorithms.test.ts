@@ -432,10 +432,17 @@ describe("#getProbabilityOfMovingToCity_j", () => {
       "c_9",
     ]
     it("Returns a valid probability value between [0,1]", () => {
+      const sumOfDesires = sumOfDesiresOfMovingToAllAllowedCities(
+        cities[0],
+        unvisitedNeighbors,
+        1,
+        1
+      )
       let probability = getProbabilityOfMovingToCity_j(
         cities[0],
         unvisitedNeighbors,
         "c_1",
+        sumOfDesires,
         1,
         1
       )
@@ -443,12 +450,19 @@ describe("#getProbabilityOfMovingToCity_j", () => {
       expect(probability).toBeLessThanOrEqual(1)
     })
     it("Sum of probabilities of moving to all remaining unvisited cities should be 1", () => {
+      const sumOfDesires = sumOfDesiresOfMovingToAllAllowedCities(
+        cities[0],
+        unvisitedNeighbors,
+        1,
+        1
+      )
       let s = 0
       for (let i = 0; i < unvisitedNeighbors.length; i++) {
         const prob = getProbabilityOfMovingToCity_j(
           cities[0],
           unvisitedNeighbors,
           unvisitedNeighbors[i],
+          sumOfDesires,
           1,
           1
         )
@@ -459,11 +473,11 @@ describe("#getProbabilityOfMovingToCity_j", () => {
     })
   })
   it("Returns 1 if it remains only one city to visit", () => {
-    let prob = getProbabilityOfMovingToCity_j(cities[0], ["c_1"], "c_1", 1, 1)
+    let prob = getProbabilityOfMovingToCity_j(cities[0], ["c_1"], "c_1", 1, 1, 1)
     expect(prob).toBe(1)
   })
   it("Returns 0 if it All the cities were visited", () => {
-    let prob = getProbabilityOfMovingToCity_j(cities[0], [], "", 1, 1)
+    let prob = getProbabilityOfMovingToCity_j(cities[0], [], "", 1, 1, 1)
     expect(prob).toBe(0)
   })
 })
